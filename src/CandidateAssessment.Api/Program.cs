@@ -1,9 +1,14 @@
+using CandidateAssessment.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Services will be registered via extension methods:
 // builder.Services
-//     .AddApplication()
-//     .AddInfrastructure(builder.Configuration)
+//     .AddApplication();
+
+builder.Services.AddInfrastructure(builder.Configuration);
+
+// builder.Services
 //     .AddPresentation(builder.Configuration);
 
 builder.Services.AddControllers();
