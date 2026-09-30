@@ -1,17 +1,16 @@
+using CandidateAssessment.Api;
+using CandidateAssessment.Api.Middleware;
+using CandidateAssessment.Application;
 using CandidateAssessment.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Services will be registered via extension methods:
-// builder.Services
-//     .AddApplication();
+// Services are registered via per-layer extension methods.
+builder.Services
+    .AddApplication()
+    .AddInfrastructure(builder.Configuration)
+    .AddPresentation();
 
-builder.Services.AddInfrastructure(builder.Configuration);
-
-// builder.Services
-//     .AddPresentation(builder.Configuration);
-
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -23,8 +22,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+
+// Required for WebApplicationFactory<Program> in tests.
+public partial class Program
+{
+}
