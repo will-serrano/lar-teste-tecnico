@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CandidateAssessment.Api/CandidateAssessment.Api.csproj" />
+    <Project Path="src/CandidateAssessment.Application/CandidateAssessment.Application.csproj" />
+    <Project Path="src/CandidateAssessment.Domain/CandidateAssessment.Domain.csproj" />
+    <Project Path="src/CandidateAssessment.Infrastructure/CandidateAssessment.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CandidateAssessment.IntegrationTests/CandidateAssessment.IntegrationTests.csproj" />
+    <Project Path="tests/CandidateAssessment.UnitTests/CandidateAssessment.UnitTests.csproj" />
+  </Folder>
+</Solution>
