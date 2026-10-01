@@ -1,3 +1,4 @@
+using CandidateAssessment.Application.Abstractions.Caching;
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Application.Abstractions.Time;
 using CandidateAssessment.Application.Exceptions;
@@ -9,15 +10,18 @@ public sealed class DeletePhoneHandler
     private readonly IPersonRepository _personRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IPersonCache _personCache;
 
     public DeletePhoneHandler(
         IPersonRepository personRepository,
         IUnitOfWork unitOfWork,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        IPersonCache personCache)
     {
         _personRepository = personRepository;
         _unitOfWork = unitOfWork;
         _dateTimeProvider = dateTimeProvider;
+        _personCache = personCache;
     }
 
     public async Task HandleAsync(
@@ -43,5 +47,7 @@ public sealed class DeletePhoneHandler
 
         person.RemovePhone(command.PhoneId, _dateTimeProvider.UtcNow);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _personCache.InvalidateAsync(command.PersonId, cancellationToken);
     }
 }

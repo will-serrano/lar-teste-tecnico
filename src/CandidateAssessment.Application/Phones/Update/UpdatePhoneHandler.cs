@@ -1,3 +1,4 @@
+using CandidateAssessment.Application.Abstractions.Caching;
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Application.Abstractions.Time;
 using CandidateAssessment.Application.Exceptions;
@@ -11,17 +12,20 @@ public sealed class UpdatePhoneHandler
     private readonly IPhoneRepository _phoneRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IPersonCache _personCache;
 
     public UpdatePhoneHandler(
         IPersonRepository personRepository,
         IPhoneRepository phoneRepository,
         IUnitOfWork unitOfWork,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        IPersonCache personCache)
     {
         _personRepository = personRepository;
         _phoneRepository = phoneRepository;
         _unitOfWork = unitOfWork;
         _dateTimeProvider = dateTimeProvider;
+        _personCache = personCache;
     }
 
     public async Task HandleAsync(
@@ -64,5 +68,7 @@ public sealed class UpdatePhoneHandler
         var nowUtc = _dateTimeProvider.UtcNow;
         person.UpdatePhone(command.PhoneId, command.Type, phoneNumber, nowUtc);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _personCache.InvalidateAsync(command.PersonId, cancellationToken);
     }
 }

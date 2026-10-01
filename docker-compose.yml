@@ -1,0 +1,38 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: candidateassessment-api:latest
+    container_name: candidateassessment-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Override these in production deployments via real secrets (Docker secrets,
+      # environment injection from CI, etc). The values here are the documented
+      # demo credentials that match the seed users in appsettings.json.
+      Jwt__Issuer: "CandidateAssessment"
+      Jwt__Audience: "CandidateAssessment.Api"
+      Jwt__SigningKey: "REPLACE-WITH-AT-LEAST-32-BYTES-SECRET-IN-PRODUCTION"
+      Jwt__ExpiresInMinutes: "60"
+      ConnectionStrings__DefaultConnection: "Data Source=/app/data/candidateassessment.db"
+      SeedUsers__Admin__Username: "admin"
+      SeedUsers__Admin__Password: "Admin@123"
+      SeedUsers__User__Username: "user"
+      SeedUsers__User__Password: "User@123"
+    volumes:
+      # Persist SQLite and rolling logs across container restarts.
+      - candidate-data:/app/data
+      - candidate-logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  candidate-data:
+  candidate-logs:

@@ -1,3 +1,4 @@
+using CandidateAssessment.Application.Abstractions.Caching;
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Application.Abstractions.Time;
 using CandidateAssessment.Application.Exceptions;
@@ -11,17 +12,20 @@ public sealed class CreatePhoneHandler
     private readonly IPhoneRepository _phoneRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IPersonCache _personCache;
 
     public CreatePhoneHandler(
         IPersonRepository personRepository,
         IPhoneRepository phoneRepository,
         IUnitOfWork unitOfWork,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        IPersonCache personCache)
     {
         _personRepository = personRepository;
         _phoneRepository = phoneRepository;
         _unitOfWork = unitOfWork;
         _dateTimeProvider = dateTimeProvider;
+        _personCache = personCache;
     }
 
     public async Task<Guid> HandleAsync(
@@ -55,6 +59,9 @@ public sealed class CreatePhoneHandler
 
         await _phoneRepository.AddAsync(phone, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Phone mutations alter the cached person snapshot.
+        await _personCache.InvalidateAsync(command.PersonId, cancellationToken);
 
         return phone.Id;
     }

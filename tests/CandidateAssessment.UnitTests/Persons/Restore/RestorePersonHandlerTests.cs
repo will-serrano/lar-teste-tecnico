@@ -18,7 +18,8 @@ public class RestorePersonHandlerTests
         var repo = new FakePersonRepository();
         var uow = new FakeUnitOfWork();
         var clock = new FixedDateTimeProvider(FixedNow);
-        var handler = new RestorePersonHandler(repo, uow, clock);
+        var (_, personCache) = TestCacheFactory.Create();
+        var handler = new RestorePersonHandler(repo, uow, clock, personCache);
 
         var person = Person.Create(
             "Maria",
@@ -39,10 +40,12 @@ public class RestorePersonHandlerTests
     [Fact]
     public async Task Should_Throw_When_PersonNotFound()
     {
+        var (_, personCache) = TestCacheFactory.Create();
         var handler = new RestorePersonHandler(
             new FakePersonRepository(),
             new FakeUnitOfWork(),
-            new FixedDateTimeProvider(FixedNow));
+            new FixedDateTimeProvider(FixedNow),
+            personCache);
 
         await Assert.ThrowsAsync<ApplicationValidationException>(
             () => handler.HandleAsync(new RestorePersonCommand(Guid.NewGuid())));
@@ -54,7 +57,8 @@ public class RestorePersonHandlerTests
         var repo = new FakePersonRepository();
         var uow = new FakeUnitOfWork();
         var clock = new FixedDateTimeProvider(FixedNow);
-        var handler = new RestorePersonHandler(repo, uow, clock);
+        var (_, personCache) = TestCacheFactory.Create();
+        var handler = new RestorePersonHandler(repo, uow, clock, personCache);
 
         var person = Person.Create(
             "Maria",
@@ -65,5 +69,27 @@ public class RestorePersonHandlerTests
 
         await Assert.ThrowsAsync<Domain.Exceptions.DomainException>(
             () => handler.HandleAsync(new RestorePersonCommand(person.Id)));
+    }
+
+    [Fact]
+    public async Task Should_InvalidateCache_OnSuccessfulRestore()
+    {
+        var repo = new FakePersonRepository();
+        var uow = new FakeUnitOfWork();
+        var clock = new FixedDateTimeProvider(FixedNow);
+        var (cache, personCache) = TestCacheFactory.Create();
+        var handler = new RestorePersonHandler(repo, uow, clock, personCache);
+
+        var person = Person.Create(
+            "Maria",
+            Cpf.Create("12345678909"),
+            new DateOnly(1990, 1, 1),
+            FixedNow);
+        person.Delete(FixedNow);
+        await repo.AddAsync(person);
+
+        await handler.HandleAsync(new RestorePersonCommand(person.Id));
+
+        Assert.True(cache.RemoveCount >= 1);
     }
 }

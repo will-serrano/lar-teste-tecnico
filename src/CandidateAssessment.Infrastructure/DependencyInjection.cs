@@ -1,7 +1,9 @@
 using CandidateAssessment.Application.Abstractions.Authentication;
+using CandidateAssessment.Application.Abstractions.Caching;
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Application.Abstractions.Time;
 using CandidateAssessment.Infrastructure.Authentication;
+using CandidateAssessment.Infrastructure.Caching;
 using CandidateAssessment.Infrastructure.Persistence;
 using CandidateAssessment.Infrastructure.Persistence.Repositories;
 using CandidateAssessment.Infrastructure.Time;
@@ -31,6 +33,20 @@ public static class DependencyInjection
 
         services.AddScoped<IUserAuthenticationService, IdentityUserAuthenticationService>();
 
+        AddCaching(services, configuration);
+
         return services;
+    }
+
+    private static void AddCaching(IServiceCollection services, IConfiguration configuration)
+    {
+        // Memory cache backing. The abstraction (ICacheService) is the only contract
+        // Application knows about; switching to Redis later is a one-line swap here.
+        services.AddMemoryCache();
+
+        services.Configure<CacheOptions>(configuration.GetSection(CacheOptions.SectionName));
+
+        services.AddSingleton<ICacheService, MemoryCacheService>();
+        services.AddSingleton<IPersonCache, PersonCacheInvalidator>();
     }
 }

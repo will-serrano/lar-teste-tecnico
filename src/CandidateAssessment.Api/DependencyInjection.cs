@@ -5,6 +5,7 @@ using CandidateAssessment.Api.Configuration;
 using CandidateAssessment.Api.Contracts.Auth;
 using CandidateAssessment.Api.Contracts.Phones;
 using CandidateAssessment.Api.Contracts.Persons;
+using CandidateAssessment.Api.Extensions;
 using CandidateAssessment.Api.Serialization;
 using CandidateAssessment.Application.Abstractions.Authentication;
 using CandidateAssessment.Application.Phones.Create;
@@ -24,7 +25,8 @@ namespace CandidateAssessment.Api;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Registers API-layer services (controllers, validators, JSON, auth, swagger).
+    /// Registers API-layer services (controllers, validators, JSON, auth, swagger,
+    /// versioning, rate limiting, health checks).
     /// </summary>
     public static IServiceCollection AddPresentation(
         this IServiceCollection services,
@@ -49,6 +51,7 @@ public static class DependencyInjection
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.Configure<SeedUsersOptions>(configuration.GetSection(SeedUsersOptions.SectionName));
+        services.Configure<SerilogOptions>(configuration.GetSection(SerilogOptions.SectionName));
 
         AddIdentity(services);
         AddAuthentication(services, configuration);
@@ -57,6 +60,14 @@ public static class DependencyInjection
         services.AddSingleton<ITokenService, JwtTokenService>();
 
         services.AddEndpointsApiExplorer();
+
+        // Order matters: versioning must be registered before Swagger so the
+        // versioned API explorer populates a "v1" Swagger document.
+        services.AddApiVersioningWithExplorer();
+
+        services.AddApiRateLimiting(configuration);
+        services.AddApiHealthChecks();
+
         services.AddSwaggerGen(options =>
         {
             options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo

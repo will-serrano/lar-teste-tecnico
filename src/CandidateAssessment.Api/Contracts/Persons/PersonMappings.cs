@@ -1,4 +1,5 @@
 using CandidateAssessment.Application.Abstractions.Pagination;
+using CandidateAssessment.Application.Persons.GetById;
 using CandidateAssessment.Domain.Entities;
 using CandidateAssessment.Domain.ValueObjects;
 
@@ -10,19 +11,55 @@ internal static class PersonMappings
     {
         ArgumentNullException.ThrowIfNull(person);
 
-        return new PersonResponse
-        {
-            Id = person.Id,
-            Name = person.Name,
-            Cpf = Cpf.Create(person.Cpf).Format(),
-            BirthDate = person.BirthDate,
-            IsActive = person.IsActive,
-            CreatedAtUtc = person.CreatedAtUtc,
-            UpdatedAtUtc = person.UpdatedAtUtc,
-            DeletedAtUtc = person.DeletedAtUtc,
-            RestoredAtUtc = person.RestoredAtUtc,
-        };
+        return ToResponseFromCore(
+            person.Id,
+            person.Name,
+            person.Cpf,
+            person.BirthDate,
+            person.IsActive,
+            person.CreatedAtUtc,
+            person.UpdatedAtUtc,
+            person.DeletedAtUtc,
+            person.RestoredAtUtc);
     }
+
+    public static PersonResponse ToResponse(this CachedPerson cached)
+    {
+        ArgumentNullException.ThrowIfNull(cached);
+
+        return ToResponseFromCore(
+            cached.Id,
+            cached.Name,
+            cached.Cpf,
+            cached.BirthDate,
+            cached.IsActive,
+            cached.CreatedAtUtc,
+            cached.UpdatedAtUtc,
+            cached.DeletedAtUtc,
+            cached.RestoredAtUtc);
+    }
+
+    private static PersonResponse ToResponseFromCore(
+        Guid id,
+        string name,
+        string cpf,
+        DateOnly birthDate,
+        bool isActive,
+        DateTime createdAtUtc,
+        DateTime updatedAtUtc,
+        DateTime? deletedAtUtc,
+        DateTime? restoredAtUtc) => new()
+    {
+        Id = id,
+        Name = name,
+        Cpf = Cpf.Create(cpf).Format(),
+        BirthDate = birthDate,
+        IsActive = isActive,
+        CreatedAtUtc = createdAtUtc,
+        UpdatedAtUtc = updatedAtUtc,
+        DeletedAtUtc = deletedAtUtc,
+        RestoredAtUtc = restoredAtUtc,
+    };
 
     public static PagedResponse<PersonResponse> ToResponse<TDomain>(
         this PagedResult<TDomain> result,

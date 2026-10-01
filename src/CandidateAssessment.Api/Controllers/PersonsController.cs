@@ -11,10 +11,12 @@ using CandidateAssessment.Application.Persons.Update;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ApiVersionAttribute = Asp.Versioning.ApiVersionAttribute;
 
 namespace CandidateAssessment.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Route("api/v1/persons")]
 [Produces("application/json")]
 [Authorize]
@@ -104,8 +106,8 @@ public class PersonsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var query = new GetPersonByIdQuery(id);
-        var person = await _getByIdHandler.HandleAsync(query, cancellationToken);
-        return Ok(person.ToResponse());
+        var cached = await _getByIdHandler.HandleAsync(query, cancellationToken);
+        return Ok(cached.ToResponse());
     }
 
     [HttpGet]
@@ -186,8 +188,8 @@ public class PersonsController : ControllerBase
         await _restoreHandler.HandleAsync(command, cancellationToken);
 
         var query = new GetPersonByIdQuery(id);
-        var person = await _getByIdHandler.HandleAsync(query, cancellationToken);
-        return Ok(person.ToResponse());
+        var cached = await _getByIdHandler.HandleAsync(query, cancellationToken);
+        return Ok(cached.ToResponse());
     }
 
     [HttpGet("deleted")]

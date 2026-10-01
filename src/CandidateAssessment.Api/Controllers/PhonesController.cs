@@ -8,10 +8,12 @@ using CandidateAssessment.Application.Phones.Update;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ApiVersionAttribute = Asp.Versioning.ApiVersionAttribute;
 
 namespace CandidateAssessment.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Route("api/v1/persons/{personId:guid}/phones")]
 [Produces("application/json")]
 [Authorize]

@@ -21,7 +21,7 @@ namespace CandidateAssessment.IntegrationTests.Infrastructure;
 /// Schema is created via <see cref="DatabaseFacade.EnsureCreated"/> during
 /// <see cref="EnsureDatabaseCreated"/> (called once per test class fixture).
 /// </summary>
-public sealed class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Program>
+public class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Program>
 {
     private const string InMemoryConnectionString = "Data Source=:memory:;";
 
@@ -52,6 +52,15 @@ public sealed class CandidateAssessmentWebApplicationFactory : WebApplicationFac
                 ["SeedUsers:Admin:Password"] = "Admin@123",
                 ["SeedUsers:User:Username"] = "user",
                 ["SeedUsers:User:Password"] = "User@123",
+                ["Serilog:MinimumLevel"] = "Warning",
+                ["Serilog:WriteToConsole"] = "false",
+                ["Serilog:WriteToFile"] = "false",
+                // Permissive limit so the existing suite is never tripped. The
+                // dedicated rate-limit test spins up its own factory with a
+                // tight quota and isolates the in-memory counter store.
+                ["IpRateLimiting:GeneralRules:0:Endpoint"] = "*",
+                ["IpRateLimiting:GeneralRules:0:Period"] = "1m",
+                ["IpRateLimiting:GeneralRules:0:Limit"] = "10000",
             });
         });
 

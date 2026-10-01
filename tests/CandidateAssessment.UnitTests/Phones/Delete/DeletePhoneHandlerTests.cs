@@ -15,9 +15,9 @@ public class DeletePhoneHandlerTests
     [Fact]
     public async Task Should_RemovePhone_When_PhoneExistsForPerson()
     {
-        var (personId, phoneId, personRepo, phoneRepo, uow, clock) = await SeedAsync();
+        var (personId, phoneId, personRepo, _, uow, clock, _, personCache) = await SeedAsync();
 
-        var handler = new DeletePhoneHandler(personRepo, uow, clock);
+        var handler = new DeletePhoneHandler(personRepo, uow, clock, personCache);
         await handler.HandleAsync(new DeletePhoneCommand(personId, phoneId));
 
         var person = await personRepo.GetByIdIncludingDeletedAsync(personId);
@@ -28,35 +28,45 @@ public class DeletePhoneHandlerTests
     [Fact]
     public async Task Should_ThrowPhoneNotFound_When_PhoneDoesNotBelongToPerson()
     {
-        var (personId, _, personRepo, phoneRepo, uow, clock) = await SeedAsync();
+        var (personId, _, personRepo, _, uow, clock, _, personCache) = await SeedAsync();
 
-        var handler = new DeletePhoneHandler(personRepo, uow, clock);
+        var handler = new DeletePhoneHandler(personRepo, uow, clock, personCache);
 
         var ex = await Assert.ThrowsAsync<ApplicationValidationException>(
             () => handler.HandleAsync(new DeletePhoneCommand(personId, Guid.NewGuid())));
         Assert.Contains("PhoneNotFound", ex.Errors.Select(e => e.Code));
     }
 
-    private static async Task<(Guid PersonId, Guid PhoneId, FakePersonRepository personRepo, FakePhoneRepository phoneRepo, FakeUnitOfWork uow, FixedDateTimeProvider clock)> SeedAsync()
+    private static async Task<(
+        Guid PersonId,
+        Guid PhoneId,
+        FakePersonRepository personRepo,
+        FakePhoneRepository phoneRepo,
+        FakeUnitOfWork uow,
+        FixedDateTimeProvider clock,
+        FakeCacheService cache,
+        FakePersonCache personCache)> SeedAsync()
     {
         var personRepo = new FakePersonRepository();
         var phoneRepo = new FakePhoneRepository();
         var uow = new FakeUnitOfWork();
         var clock = new FixedDateTimeProvider(FixedNow);
+        var (cache, personCache) = TestCacheFactory.Create();
         var createPerson = await new Application.Persons.Create.CreatePersonHandler(
             personRepo,
             uow,
-            clock).HandleAsync(new Application.Persons.Create.CreatePersonCommand(
+            clock,
+            personCache).HandleAsync(new Application.Persons.Create.CreatePersonCommand(
                 "Maria",
                 "123.456.789-09",
                 new DateOnly(1990, 1, 1)));
 
-        var createHandler = new CreatePhoneHandler(personRepo, phoneRepo, uow, clock);
+        var createHandler = new CreatePhoneHandler(personRepo, phoneRepo, uow, clock, personCache);
         var phoneId = await createHandler.HandleAsync(new CreatePhoneCommand(
             createPerson,
             PhoneType.Mobile,
             "13999999999"));
 
-        return (createPerson, phoneId, personRepo, phoneRepo, uow, clock);
+        return (createPerson, phoneId, personRepo, phoneRepo, uow, clock, cache, personCache);
     }
 }

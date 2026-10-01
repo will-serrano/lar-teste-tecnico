@@ -18,12 +18,15 @@ public class CreatePhoneHandlerTests
         var phoneRepo = new FakePhoneRepository();
         var uow = new FakeUnitOfWork();
         var clock = new FixedDateTimeProvider(FixedNow);
-        var handler = new CreatePhoneHandler(personRepo, phoneRepo, uow, clock);
+        var (_, personCache) = TestCacheFactory.Create();
+        var (_, personCache2) = TestCacheFactory.Create();
+        var handler = new CreatePhoneHandler(personRepo, phoneRepo, uow, clock, personCache);
 
         var createPerson = await new Application.Persons.Create.CreatePersonHandler(
             personRepo,
             uow,
-            clock).HandleAsync(new Application.Persons.Create.CreatePersonCommand(
+            clock,
+            personCache2).HandleAsync(new Application.Persons.Create.CreatePersonCommand(
                 "Maria",
                 "123.456.789-09",
                 new DateOnly(1990, 1, 1)));
@@ -43,7 +46,8 @@ public class CreatePhoneHandlerTests
         var phoneRepo = new FakePhoneRepository();
         var uow = new FakeUnitOfWork();
         var clock = new FixedDateTimeProvider(FixedNow);
-        var handler = new CreatePhoneHandler(personRepo, phoneRepo, uow, clock);
+        var (_, personCache) = TestCacheFactory.Create();
+        var handler = new CreatePhoneHandler(personRepo, phoneRepo, uow, clock, personCache);
 
         var command = new CreatePhoneCommand(Guid.NewGuid(), PhoneType.Mobile, "13999999999");
 
@@ -59,15 +63,18 @@ public class CreatePhoneHandlerTests
         var phoneRepo = new FakePhoneRepository();
         var uow = new FakeUnitOfWork();
         var clock = new FixedDateTimeProvider(FixedNow);
+        var (_, personCache) = TestCacheFactory.Create();
+        var (_, personCache2) = TestCacheFactory.Create();
         var createPerson = await new Application.Persons.Create.CreatePersonHandler(
             personRepo,
             uow,
-            clock).HandleAsync(new Application.Persons.Create.CreatePersonCommand(
+            clock,
+            personCache).HandleAsync(new Application.Persons.Create.CreatePersonCommand(
                 "Maria",
                 "123.456.789-09",
                 new DateOnly(1990, 1, 1)));
 
-        var handler = new CreatePhoneHandler(personRepo, phoneRepo, uow, clock);
+        var handler = new CreatePhoneHandler(personRepo, phoneRepo, uow, clock, personCache2);
 
         await handler.HandleAsync(new CreatePhoneCommand(createPerson, PhoneType.Mobile, "13999999999"));
 
@@ -86,15 +93,18 @@ public class CreatePhoneHandlerTests
         var phoneRepo = new FakePhoneRepository();
         var uow = new FakeUnitOfWork();
         var clock = new FixedDateTimeProvider(FixedNow);
+        var (_, personCache) = TestCacheFactory.Create();
+        var (_, personCache2) = TestCacheFactory.Create();
         var createPerson = await new Application.Persons.Create.CreatePersonHandler(
             personRepo,
             uow,
-            clock).HandleAsync(new Application.Persons.Create.CreatePersonCommand(
+            clock,
+            personCache).HandleAsync(new Application.Persons.Create.CreatePersonCommand(
                 "Maria",
                 "123.456.789-09",
                 new DateOnly(1990, 1, 1)));
 
-        var handler = new CreatePhoneHandler(personRepo, phoneRepo, uow, clock);
+        var handler = new CreatePhoneHandler(personRepo, phoneRepo, uow, clock, personCache2);
 
         for (var i = 0; i < 5; i++)
         {

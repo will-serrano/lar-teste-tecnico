@@ -1,0 +1,34 @@
+# Avoid copying development artifacts and secrets into the build context.
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+**/.git/
+**/.github/
+
+# Test outputs and coverage reports.
+**/TestResults/
+**/coverage/
+**/*.coverage
+**/coveragereport/
+
+# Local databases and SQLite artefacts.
+**/*.db
+**/*.db-shm
+**/*.db-wal
+
+# Local logs that would only add noise.
+**/Logs/
+
+# Documentation and planning artefacts (kept outside the runtime image).
+docs/
+plan.md
+README.md
+
+# Editor / OS noise.
+**/.DS_Store
+**/Thumbs.db
+
+# Keep .editorconfig available during restore for analyzer configuration.
+!**/.editorconfig

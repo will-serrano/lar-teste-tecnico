@@ -18,7 +18,8 @@ public class DeletePersonHandlerTests
         var repo = new FakePersonRepository();
         var uow = new FakeUnitOfWork();
         var clock = new FixedDateTimeProvider(FixedNow);
-        var handler = new DeletePersonHandler(repo, uow, clock);
+        var (_, personCache) = TestCacheFactory.Create();
+        var handler = new DeletePersonHandler(repo, uow, clock, personCache);
 
         var person = Person.Create(
             "Maria",
@@ -41,12 +42,35 @@ public class DeletePersonHandlerTests
     [Fact]
     public async Task Should_Throw_When_PersonNotFound()
     {
+        var (_, personCache) = TestCacheFactory.Create();
         var handler = new DeletePersonHandler(
             new FakePersonRepository(),
             new FakeUnitOfWork(),
-            new FixedDateTimeProvider(FixedNow));
+            new FixedDateTimeProvider(FixedNow),
+            personCache);
 
         await Assert.ThrowsAsync<ApplicationValidationException>(
             () => handler.HandleAsync(new DeletePersonCommand(Guid.NewGuid())));
+    }
+
+    [Fact]
+    public async Task Should_InvalidateCache_OnSuccessfulDelete()
+    {
+        var repo = new FakePersonRepository();
+        var uow = new FakeUnitOfWork();
+        var clock = new FixedDateTimeProvider(FixedNow);
+        var (cache, personCache) = TestCacheFactory.Create();
+        var handler = new DeletePersonHandler(repo, uow, clock, personCache);
+
+        var person = Person.Create(
+            "Maria",
+            Cpf.Create("12345678909"),
+            new DateOnly(1990, 1, 1),
+            FixedNow);
+        await repo.AddAsync(person);
+
+        await handler.HandleAsync(new DeletePersonCommand(person.Id));
+
+        Assert.True(cache.RemoveCount >= 1);
     }
 }

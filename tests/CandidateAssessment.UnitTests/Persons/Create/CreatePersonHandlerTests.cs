@@ -16,7 +16,8 @@ public class CreatePersonHandlerTests
         var repo = new FakePersonRepository();
         var uow = new FakeUnitOfWork();
         var clock = new FixedDateTimeProvider(FixedNow);
-        var handler = new CreatePersonHandler(repo, uow, clock);
+        var (_, personCache) = TestCacheFactory.Create();
+        var handler = new CreatePersonHandler(repo, uow, clock, personCache);
 
         var command = new CreatePersonCommand("Maria", "123.456.789-09", new DateOnly(1990, 1, 1));
 
@@ -31,7 +32,8 @@ public class CreatePersonHandlerTests
     {
         var repo = new FakePersonRepository();
         var clock = new FixedDateTimeProvider(FixedNow);
-        var handler = new CreatePersonHandler(repo, new FakeUnitOfWork(), clock);
+        var (_, personCache) = TestCacheFactory.Create();
+        var handler = new CreatePersonHandler(repo, new FakeUnitOfWork(), clock, personCache);
 
         var command = new CreatePersonCommand("Maria", "123.456.789-09", new DateOnly(1990, 1, 1));
         await handler.HandleAsync(command);
@@ -48,7 +50,8 @@ public class CreatePersonHandlerTests
     {
         var repo = new FakePersonRepository();
         var clock = new FixedDateTimeProvider(FixedNow);
-        var handler = new CreatePersonHandler(repo, new FakeUnitOfWork(), clock);
+        var (_, personCache) = TestCacheFactory.Create();
+        var handler = new CreatePersonHandler(repo, new FakeUnitOfWork(), clock, personCache);
 
         var command = new CreatePersonCommand("Maria", "00000000000", new DateOnly(1990, 1, 1));
 
@@ -61,12 +64,28 @@ public class CreatePersonHandlerTests
     {
         var repo = new FakePersonRepository();
         var clock = new FixedDateTimeProvider(FixedNow);
-        var handler = new CreatePersonHandler(repo, new FakeUnitOfWork(), clock);
+        var (_, personCache) = TestCacheFactory.Create();
+        var handler = new CreatePersonHandler(repo, new FakeUnitOfWork(), clock, personCache);
 
         var future = DateOnly.FromDateTime(FixedNow).AddDays(1);
         var command = new CreatePersonCommand("Maria", "123.456.789-09", future);
 
         await Assert.ThrowsAsync<Domain.Exceptions.DomainException>(
             () => handler.HandleAsync(command));
+    }
+
+    [Fact]
+    public async Task Should_InvalidateCache_OnSuccessfulCreate()
+    {
+        var repo = new FakePersonRepository();
+        var uow = new FakeUnitOfWork();
+        var clock = new FixedDateTimeProvider(FixedNow);
+        var (cache, personCache) = TestCacheFactory.Create();
+        var handler = new CreatePersonHandler(repo, uow, clock, personCache);
+
+        var id = await handler.HandleAsync(
+            new CreatePersonCommand("Maria", "123.456.789-09", new DateOnly(1990, 1, 1)));
+
+        Assert.True(cache.RemoveCount >= 1);
     }
 }
