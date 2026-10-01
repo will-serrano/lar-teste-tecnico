@@ -1,23 +1,22 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using CandidateAssessment.Api.Serialization;
 using CandidateAssessment.IntegrationTests.Infrastructure;
 using Xunit;
 
 namespace CandidateAssessment.IntegrationTests;
 
-public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFactory>
+[Collection(IntegrationTestCollection.Name)]
+public class PersonsApiTests
 {
     private readonly CandidateAssessmentWebApplicationFactory _factory;
-    private readonly HttpClient _client;
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         Converters =
         {
-            new JsonStringEnumConverter(),
+            new System.Text.Json.Serialization.JsonStringEnumConverter(),
             new DateOnlyJsonConverter(),
         },
     };
@@ -26,12 +25,12 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
     {
         _factory = factory;
         _factory.EnsureDatabaseCreated();
-        _client = _factory.CreateClient();
     }
 
     [Fact]
     public async Task Should_CreateAndRetrievePerson_When_RequestIsValid()
     {
+        var client = await _factory.CreateAuthenticatedAdminClientAsync();
         var cpf = UniqueCpf();
         var request = new
         {
@@ -40,7 +39,7 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
             birthDate = "1990-05-20",
         };
 
-        var createResponse = await _client.PostAsJsonAsync("/api/v1/persons", request);
+        var createResponse = await client.PostAsJsonAsync("/api/v1/persons", request);
 
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         var created = await createResponse.Content.ReadFromJsonAsync<PersonResponse>(JsonOptions);
@@ -49,7 +48,7 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
         Assert.Equal("Maria Souza", created.Name);
         Assert.True(created.IsActive);
 
-        var getResponse = await _client.GetAsync($"/api/v1/persons/{created.Id}");
+        var getResponse = await client.GetAsync($"/api/v1/persons/{created.Id}");
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
         var fetched = await getResponse.Content.ReadFromJsonAsync<PersonResponse>(JsonOptions);
         Assert.NotNull(fetched);
@@ -59,6 +58,7 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
     [Fact]
     public async Task Should_ReturnBadRequest_When_NameIsBlank()
     {
+        var client = await _factory.CreateAuthenticatedAdminClientAsync();
         var request = new
         {
             name = string.Empty,
@@ -66,7 +66,7 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
             birthDate = "1990-05-20",
         };
 
-        var response = await _client.PostAsJsonAsync("/api/v1/persons", request);
+        var response = await client.PostAsJsonAsync("/api/v1/persons", request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -74,6 +74,7 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
     [Fact]
     public async Task Should_ReturnBadRequest_When_CpfIsMalformed()
     {
+        var client = await _factory.CreateAuthenticatedAdminClientAsync();
         var request = new
         {
             name = "Maria",
@@ -81,7 +82,7 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
             birthDate = "1990-05-20",
         };
 
-        var response = await _client.PostAsJsonAsync("/api/v1/persons", request);
+        var response = await client.PostAsJsonAsync("/api/v1/persons", request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -89,6 +90,7 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
     [Fact]
     public async Task Should_ReturnConflict_When_CpfIsMathematicallyInvalid()
     {
+        var client = await _factory.CreateAuthenticatedAdminClientAsync();
         // 00000000000 is rejected by the Cpf value object (all digits equal).
         var request = new
         {
@@ -97,15 +99,15 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
             birthDate = "1990-05-20",
         };
 
-        var response = await _client.PostAsJsonAsync("/api/v1/persons", request);
+        var response = await client.PostAsJsonAsync("/api/v1/persons", request);
 
-        // The validator accepts the format (11 digits), the domain rejects the value.
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
     [Fact]
     public async Task Should_ReturnConflict_When_CpfAlreadyExists()
     {
+        var client = await _factory.CreateAuthenticatedAdminClientAsync();
         var cpf = UniqueCpf();
         var request = new
         {
@@ -114,26 +116,29 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
             birthDate = "1990-05-20",
         };
 
-        var first = await _client.PostAsJsonAsync("/api/v1/persons", request);
+        var first = await client.PostAsJsonAsync("/api/v1/persons", request);
         Assert.Equal(HttpStatusCode.Created, first.StatusCode);
 
-        var second = await _client.PostAsJsonAsync("/api/v1/persons", request with { name = "Other" });
+        var second = await client.PostAsJsonAsync("/api/v1/persons", request with { name = "Other" });
         Assert.Equal(HttpStatusCode.Conflict, second.StatusCode);
     }
 
     [Fact]
     public async Task Should_ReturnNotFound_When_PersonDoesNotExist()
     {
-        var response = await _client.GetAsync($"/api/v1/persons/{Guid.NewGuid()}");
+        var client = await _factory.CreateAuthenticatedUserClientAsync();
+        var response = await client.GetAsync($"/api/v1/persons/{Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
     public async Task Should_SearchPersons_WithPagination()
     {
+        var client = await _factory.CreateAuthenticatedAdminClientAsync();
+
         for (var i = 0; i < 5; i++)
         {
-            await _client.PostAsJsonAsync("/api/v1/persons", new
+            await client.PostAsJsonAsync("/api/v1/persons", new
             {
                 name = $"Paginated Person {Guid.NewGuid():N} {i:D2}",
                 cpf = UniqueCpf(),
@@ -141,7 +146,7 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
             });
         }
 
-        var response = await _client.GetAsync("/api/v1/persons?page=1&pageSize=3");
+        var response = await client.GetAsync("/api/v1/persons?page=1&pageSize=3");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var paged = await response.Content.ReadFromJsonAsync<PagedResponse<PersonResponse>>(JsonOptions);
@@ -154,22 +159,23 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
     [Fact]
     public async Task Should_SearchPersons_FilterByName()
     {
+        var client = await _factory.CreateAuthenticatedAdminClientAsync();
         var uniqueTag = Guid.NewGuid().ToString("N");
         var targetName = $"FilterTarget-{uniqueTag}";
-        await _client.PostAsJsonAsync("/api/v1/persons", new
+        await client.PostAsJsonAsync("/api/v1/persons", new
         {
             name = targetName,
             cpf = UniqueCpf(),
             birthDate = "1990-01-01",
         });
-        await _client.PostAsJsonAsync("/api/v1/persons", new
+        await client.PostAsJsonAsync("/api/v1/persons", new
         {
             name = $"Other-{uniqueTag}",
             cpf = UniqueCpf(),
             birthDate = "1990-01-01",
         });
 
-        var response = await _client.GetAsync($"/api/v1/persons?name={uniqueTag}");
+        var response = await client.GetAsync($"/api/v1/persons?name={uniqueTag}");
         var paged = await response.Content.ReadFromJsonAsync<PagedResponse<PersonResponse>>(JsonOptions);
 
         Assert.NotNull(paged);
@@ -180,7 +186,8 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
     [Fact]
     public async Task Should_UpdatePerson_When_RequestIsValid()
     {
-        var create = await _client.PostAsJsonAsync("/api/v1/persons", new
+        var client = await _factory.CreateAuthenticatedAdminClientAsync();
+        var create = await client.PostAsJsonAsync("/api/v1/persons", new
         {
             name = "Maria",
             cpf = UniqueCpf(),
@@ -188,7 +195,7 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
         });
         var created = await create.Content.ReadFromJsonAsync<PersonResponse>(JsonOptions);
 
-        var updateResponse = await _client.PutAsJsonAsync(
+        var updateResponse = await client.PutAsJsonAsync(
             $"/api/v1/persons/{created!.Id}",
             new
             {
@@ -198,7 +205,7 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
 
         Assert.Equal(HttpStatusCode.NoContent, updateResponse.StatusCode);
 
-        var fetched = await _client.GetFromJsonAsync<PersonResponse>(
+        var fetched = await client.GetFromJsonAsync<PersonResponse>(
             $"/api/v1/persons/{created.Id}",
             JsonOptions);
         Assert.NotNull(fetched);
@@ -209,7 +216,8 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
     [Fact]
     public async Task Should_SoftDeleteAndRestorePerson()
     {
-        var create = await _client.PostAsJsonAsync("/api/v1/persons", new
+        var client = await _factory.CreateAuthenticatedAdminClientAsync();
+        var create = await client.PostAsJsonAsync("/api/v1/persons", new
         {
             name = "Maria",
             cpf = UniqueCpf(),
@@ -217,31 +225,32 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
         });
         var created = await create.Content.ReadFromJsonAsync<PersonResponse>(JsonOptions);
 
-        var deleteResponse = await _client.DeleteAsync($"/api/v1/persons/{created!.Id}");
+        var deleteResponse = await client.DeleteAsync($"/api/v1/persons/{created!.Id}");
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
-        var getAfterDelete = await _client.GetAsync($"/api/v1/persons/{created.Id}");
+        var getAfterDelete = await client.GetAsync($"/api/v1/persons/{created.Id}");
         Assert.Equal(HttpStatusCode.NotFound, getAfterDelete.StatusCode);
 
-        var deletedList = await _client.GetFromJsonAsync<PagedResponse<PersonResponse>>(
+        var deletedList = await client.GetFromJsonAsync<PagedResponse<PersonResponse>>(
             "/api/v1/persons/deleted",
             JsonOptions);
         Assert.NotNull(deletedList);
         Assert.Contains(deletedList!.Items, p => p.Id == created.Id);
 
-        var restoreResponse = await _client.PostAsync(
+        var restoreResponse = await client.PostAsync(
             $"/api/v1/persons/{created.Id}/restore",
             content: null);
         Assert.Equal(HttpStatusCode.OK, restoreResponse.StatusCode);
 
-        var getAfterRestore = await _client.GetAsync($"/api/v1/persons/{created.Id}");
+        var getAfterRestore = await client.GetAsync($"/api/v1/persons/{created.Id}");
         Assert.Equal(HttpStatusCode.OK, getAfterRestore.StatusCode);
     }
 
     [Fact]
     public async Task Should_ReturnProblemDetails_OnException()
     {
-        var response = await _client.GetAsync($"/api/v1/persons/{Guid.NewGuid()}");
+        var client = await _factory.CreateAuthenticatedUserClientAsync();
+        var response = await client.GetAsync($"/api/v1/persons/{Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
         var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
@@ -252,14 +261,9 @@ public class PersonsApiTests : IClassFixture<CandidateAssessmentWebApplicationFa
 
     /// <summary>
     /// Generates a unique, mathematically valid CPF per call.
-    /// The test database persists across tests within the class, so uniqueness
-    /// across tests is required to avoid CPF constraint violations.
     /// </summary>
     private static string UniqueCpf()
     {
-        // Take the full Guid as a 32-hex string and sample 11 distinct digits.
-        // Two random Guid samples produce identical 11-digit sequences only
-        // by chance, which is astronomically unlikely.
         var hex = Guid.NewGuid().ToString("N");
         Span<char> digits = stackalloc char[11];
 

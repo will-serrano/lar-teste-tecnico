@@ -1,8 +1,11 @@
+using CandidateAssessment.Application.Abstractions.Authentication;
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Application.Abstractions.Time;
+using CandidateAssessment.Infrastructure.Authentication;
 using CandidateAssessment.Infrastructure.Persistence;
 using CandidateAssessment.Infrastructure.Persistence.Repositories;
 using CandidateAssessment.Infrastructure.Time;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +28,8 @@ public static class DependencyInjection
         services.AddScoped<IPhoneRepository, EfPhoneRepository>();
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+
+        services.AddScoped<IUserAuthenticationService, IdentityUserAuthenticationService>();
 
         return services;
     }

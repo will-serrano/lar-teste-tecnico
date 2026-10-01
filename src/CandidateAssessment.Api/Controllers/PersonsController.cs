@@ -1,3 +1,4 @@
+using CandidateAssessment.Api.Authorization;
 using CandidateAssessment.Api.Contracts;
 using CandidateAssessment.Api.Contracts.Persons;
 using CandidateAssessment.Application.Persons.Create;
@@ -8,6 +9,7 @@ using CandidateAssessment.Application.Persons.Restore;
 using CandidateAssessment.Application.Persons.Search;
 using CandidateAssessment.Application.Persons.Update;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CandidateAssessment.Api.Controllers;
@@ -15,6 +17,7 @@ namespace CandidateAssessment.Api.Controllers;
 [ApiController]
 [Route("api/v1/persons")]
 [Produces("application/json")]
+[Authorize]
 public class PersonsController : ControllerBase
 {
     private readonly CreatePersonHandler _createHandler;
@@ -50,8 +53,11 @@ public class PersonsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.CanManagePersons)]
     [ProducesResponseType(typeof(PersonResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<PersonResponse>> Create(
         [FromBody] CreatePersonRequest request,
@@ -88,7 +94,10 @@ public class PersonsController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Policy = AuthorizationPolicies.CanReadPersons)]
     [ProducesResponseType(typeof(PersonResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PersonResponse>> GetById(
         Guid id,
@@ -100,8 +109,11 @@ public class PersonsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = AuthorizationPolicies.CanReadPersons)]
     [ProducesResponseType(typeof(PagedResponse<PersonResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<PagedResponse<PersonResponse>>> Search(
         [FromQuery] string? name,
         [FromQuery] string? cpf,
@@ -115,8 +127,11 @@ public class PersonsController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = AuthorizationPolicies.CanManagePersons)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(
         Guid id,
@@ -144,7 +159,10 @@ public class PersonsController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = AuthorizationPolicies.CanManagePersons)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
@@ -154,7 +172,10 @@ public class PersonsController : ControllerBase
     }
 
     [HttpPost("{id:guid}/restore")]
+    [Authorize(Policy = AuthorizationPolicies.CanManagePersons)]
     [ProducesResponseType(typeof(PersonResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<PersonResponse>> Restore(
@@ -170,7 +191,10 @@ public class PersonsController : ControllerBase
     }
 
     [HttpGet("deleted")]
+    [Authorize(Policy = AuthorizationPolicies.CanViewDeletedPersons)]
     [ProducesResponseType(typeof(PagedResponse<PersonResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<PagedResponse<PersonResponse>>> GetDeleted(
         [FromQuery] int? page,
         [FromQuery] int? pageSize,

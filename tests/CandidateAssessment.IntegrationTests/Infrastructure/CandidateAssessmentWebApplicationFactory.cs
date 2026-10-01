@@ -1,7 +1,11 @@
 using System.Data.Common;
+using System.Net.Http.Json;
+using CandidateAssessment.Domain.Roles;
+using CandidateAssessment.Infrastructure.Authentication;
 using CandidateAssessment.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +25,12 @@ public sealed class CandidateAssessmentWebApplicationFactory : WebApplicationFac
 {
     private const string InMemoryConnectionString = "Data Source=:memory:;";
 
+    public const string TestSigningKey = "test-signing-key-with-at-least-32-bytes-of-length-for-hmacsha256";
+
+    public const string TestIssuer = "TestIssuer";
+
+    public const string TestAudience = "TestAudience";
+
     public DbConnection Connection { get; private set; } = default!;
 
     private bool _schemaEnsured;
@@ -34,6 +44,14 @@ public sealed class CandidateAssessmentWebApplicationFactory : WebApplicationFac
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = InMemoryConnectionString,
+                ["Jwt:Issuer"] = TestIssuer,
+                ["Jwt:Audience"] = TestAudience,
+                ["Jwt:SigningKey"] = TestSigningKey,
+                ["Jwt:ExpiresInMinutes"] = "60",
+                ["SeedUsers:Admin:Username"] = "admin",
+                ["SeedUsers:Admin:Password"] = "Admin@123",
+                ["SeedUsers:User:Username"] = "user",
+                ["SeedUsers:User:Password"] = "User@123",
             });
         });
 
@@ -60,7 +78,61 @@ public sealed class CandidateAssessmentWebApplicationFactory : WebApplicationFac
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         dbContext.Database.EnsureCreated();
+
+        // Seed Identity immediately after schema creation. The lazy IdentitySeedMiddleware
+        // used at runtime would also handle this, but we run it explicitly here so that
+        // any subsequent test (which doesn't go through middleware before login) finds
+        // the seed users in place.
+        IdentityUserSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+
         _schemaEnsured = true;
+    }
+
+    /// <summary>
+    /// Returns a fresh HttpClient with an Authorization header for the configured Admin user.
+    /// </summary>
+    public async Task<HttpClient> CreateAuthenticatedAdminClientAsync()
+    {
+        var client = CreateClient();
+        var token = await LoginAsync(client, "admin", "Admin@123");
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        return client;
+    }
+
+    /// <summary>
+    /// Returns a fresh HttpClient with an Authorization header for the configured User role.
+    /// </summary>
+    public async Task<HttpClient> CreateAuthenticatedUserClientAsync()
+    {
+        var client = CreateClient();
+        var token = await LoginAsync(client, "user", "User@123");
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        return client;
+    }
+
+    private static async Task<string> LoginAsync(HttpClient client, string username, string password)
+    {
+        var response = await client.PostAsJsonAsync("/api/v1/auth/login", new
+        {
+            username,
+            password,
+        });
+        response.EnsureSuccessStatusCode();
+        var payload = await response.Content.ReadFromJsonAsync<LoginResponsePayload>();
+        return payload!.AccessToken;
+    }
+
+    private sealed class LoginResponsePayload
+    {
+        public string AccessToken { get; init; } = default!;
+
+        public DateTime ExpiresAtUtc { get; init; }
+
+        public string Username { get; init; } = default!;
+
+        public IReadOnlyList<string> Roles { get; init; } = Array.Empty<string>();
     }
 
     private static void RemoveDbContextRegistrations(IServiceCollection services)

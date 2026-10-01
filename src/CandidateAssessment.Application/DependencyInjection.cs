@@ -1,3 +1,4 @@
+using CandidateAssessment.Application.Authentication.Login;
 using CandidateAssessment.Application.Persons.Create;
 using CandidateAssessment.Application.Persons.Delete;
 using CandidateAssessment.Application.Persons.GetById;
@@ -5,6 +6,11 @@ using CandidateAssessment.Application.Persons.GetDeleted;
 using CandidateAssessment.Application.Persons.Restore;
 using CandidateAssessment.Application.Persons.Search;
 using CandidateAssessment.Application.Persons.Update;
+using CandidateAssessment.Application.Phones.Create;
+using CandidateAssessment.Application.Phones.Delete;
+using CandidateAssessment.Application.Phones.GetById;
+using CandidateAssessment.Application.Phones.List;
+using CandidateAssessment.Application.Phones.Update;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,6 +32,14 @@ public static class DependencyInjection
         services.AddScoped<DeletePersonHandler>();
         services.AddScoped<RestorePersonHandler>();
         services.AddScoped<GetDeletedPersonsHandler>();
+
+        services.AddScoped<CreatePhoneHandler>();
+        services.AddScoped<UpdatePhoneHandler>();
+        services.AddScoped<DeletePhoneHandler>();
+        services.AddScoped<GetPhoneByIdHandler>();
+        services.AddScoped<ListPhonesHandler>();
+
+        services.AddScoped<LoginHandler>();
 
         services.AddValidatorsFromAssemblyContaining<ApplicationAssemblyMarker>();
 

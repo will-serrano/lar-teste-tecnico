@@ -95,20 +95,28 @@ public sealed class ExceptionHandlingMiddleware
         string traceId)
     {
         var hasNotFound = exception.Errors.Any(e =>
-            string.Equals(e.Code, "PersonNotFound", StringComparison.Ordinal));
+            string.Equals(e.Code, "PersonNotFound", StringComparison.Ordinal)
+            || string.Equals(e.Code, "PhoneNotFound", StringComparison.Ordinal));
 
         var hasConflict = exception.Errors.Any(e =>
             string.Equals(e.Code, "CpfAlreadyExists", StringComparison.Ordinal)
+            || string.Equals(e.Code, "PhoneAlreadyExists", StringComparison.Ordinal)
             || string.Equals(e.Code, "Conflict", StringComparison.Ordinal));
 
-        var statusCode = hasNotFound
-            ? StatusCodes.Status404NotFound
-            : hasConflict
-                ? StatusCodes.Status409Conflict
-                : StatusCodes.Status400BadRequest;
+        var hasUnauthorized = exception.Errors.Any(e =>
+            string.Equals(e.Code, "InvalidCredentials", StringComparison.Ordinal));
+
+        var statusCode = hasUnauthorized
+            ? StatusCodes.Status401Unauthorized
+            : hasNotFound
+                ? StatusCodes.Status404NotFound
+                : hasConflict
+                    ? StatusCodes.Status409Conflict
+                    : StatusCodes.Status400BadRequest;
 
         var type = statusCode switch
         {
+            StatusCodes.Status401Unauthorized => "https://tools.ietf.org/html/rfc7235#section-3.1",
             StatusCodes.Status404NotFound => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
             StatusCodes.Status409Conflict => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
             _ => "https://tools.ietf.org/html/rfc7231#section-6.5.1",
@@ -116,6 +124,7 @@ public sealed class ExceptionHandlingMiddleware
 
         var title = statusCode switch
         {
+            StatusCodes.Status401Unauthorized => "Unauthorized",
             StatusCodes.Status404NotFound => "Resource not found",
             StatusCodes.Status409Conflict => "Conflict",
             _ => "Validation failed",

@@ -88,6 +88,24 @@ public sealed class Person
         return newPhone;
     }
 
+    public Phone UpdatePhone(Guid phoneId, PhoneType type, PhoneNumber number, DateTime nowUtc)
+    {
+        if (!IsActive)
+        {
+            throw new DomainException("Cannot update a phone of an inactive person.");
+        }
+
+        var phone = _phones.Find(p => p.Id == phoneId);
+        if (phone is null)
+        {
+            throw new DomainException("Phone not found for this person.");
+        }
+
+        phone.Update(type, number, nowUtc);
+        UpdatedAtUtc = nowUtc;
+        return phone;
+    }
+
     public void RemovePhone(Guid phoneId, DateTime nowUtc)
     {
         var phone = _phones.Find(p => p.Id == phoneId);
