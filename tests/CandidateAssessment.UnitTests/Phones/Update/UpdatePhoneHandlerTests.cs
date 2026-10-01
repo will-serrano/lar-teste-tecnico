@@ -77,7 +77,7 @@ public class UpdatePhoneHandlerTests
         FakePersonCache personCache)> SeedAsync()
     {
         var personRepo = new FakePersonRepository();
-        var phoneRepo = new FakePhoneRepository();
+        var phoneRepo = new FakePhoneRepository(personRepo);
         var uow = new FakeUnitOfWork();
         var clock = new FixedDateTimeProvider(FixedNow);
         var (cache, personCache) = TestCacheFactory.Create();

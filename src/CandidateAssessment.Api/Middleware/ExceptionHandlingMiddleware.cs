@@ -4,6 +4,7 @@ using CandidateAssessment.Application.Exceptions;
 using CandidateAssessment.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace CandidateAssessment.Api.Middleware;
 
@@ -85,6 +86,7 @@ public sealed class ExceptionHandlingMiddleware
                 applicationEx,
                 traceId),
             DomainException domainEx => MapDomainException(context, domainEx, traceId),
+            DbUpdateException dbEx => MapDbUpdateException(context, dbEx, traceId),
             _ => MapUnexpected(context, exception, traceId),
         };
     }
@@ -165,6 +167,37 @@ public sealed class ExceptionHandlingMiddleware
             "https://tools.ietf.org/html/rfc7231#section-6.5.8");
 
         problem.Detail = exception.Message;
+        problem.Extensions["traceId"] = traceId;
+
+        return (StatusCodes.Status409Conflict, problem);
+    }
+
+    private (int StatusCode, ProblemDetails Problem) MapDbUpdateException(
+        HttpContext context,
+        DbUpdateException exception,
+        string traceId)
+    {
+        // SQLite reports UNIQUE constraint violations with "UNIQUE constraint failed".
+        // Other providers use similar distinguishable messages. If the inner exception
+        // matches, this is a concurrency conflict (e.g. duplicate CPF or duplicate
+        // phone number inserted simultaneously); otherwise treat as unexpected.
+        var isConstraintViolation = exception.InnerException is not null
+            && exception.InnerException.Message.Contains(
+                "UNIQUE constraint failed",
+                StringComparison.OrdinalIgnoreCase);
+
+        if (!isConstraintViolation)
+        {
+            return MapUnexpected(context, exception, traceId);
+        }
+
+        var problem = _problemDetailsFactory.CreateProblemDetails(
+            context,
+            StatusCodes.Status409Conflict,
+            "Conflict",
+            "https://tools.ietf.org/html/rfc7231#section-6.5.8");
+
+        problem.Detail = "A record with the same unique value already exists.";
         problem.Extensions["traceId"] = traceId;
 
         return (StatusCodes.Status409Conflict, problem);

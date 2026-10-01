@@ -175,21 +175,18 @@ public class PersonsController : ControllerBase
 
     [HttpPost("{id:guid}/restore")]
     [Authorize(Policy = AuthorizationPolicies.CanManagePersons)]
-    [ProducesResponseType(typeof(PersonResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<PersonResponse>> Restore(
+    public async Task<IActionResult> Restore(
         Guid id,
         CancellationToken cancellationToken)
     {
         var command = new RestorePersonCommand(id);
         await _restoreHandler.HandleAsync(command, cancellationToken);
-
-        var query = new GetPersonByIdQuery(id);
-        var cached = await _getByIdHandler.HandleAsync(query, cancellationToken);
-        return Ok(cached.ToResponse());
+        return NoContent();
     }
 
     [HttpGet("deleted")]

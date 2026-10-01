@@ -240,7 +240,7 @@ public class PersonsApiTests
         var restoreResponse = await client.PostAsync(
             $"/api/v1/persons/{created.Id}/restore",
             content: null);
-        Assert.Equal(HttpStatusCode.OK, restoreResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, restoreResponse.StatusCode);
 
         var getAfterRestore = await client.GetAsync($"/api/v1/persons/{created.Id}");
         Assert.Equal(HttpStatusCode.OK, getAfterRestore.StatusCode);

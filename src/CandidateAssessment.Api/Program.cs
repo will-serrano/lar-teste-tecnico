@@ -110,6 +110,11 @@ try
     {
         Predicate = check => check.Tags.Contains("ready"),
     });
+    app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+    {
+        // Liveness probe: confirms the process is responsive, no dependency checks.
+        Predicate = _ => false,
+    });
 
     app.Run();
 

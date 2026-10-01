@@ -57,7 +57,6 @@ public sealed class CreatePhoneHandler
         var nowUtc = _dateTimeProvider.UtcNow;
         var phone = person.AddPhone(command.Type, phoneNumber, nowUtc);
 
-        await _phoneRepository.AddAsync(phone, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Phone mutations alter the cached person snapshot.

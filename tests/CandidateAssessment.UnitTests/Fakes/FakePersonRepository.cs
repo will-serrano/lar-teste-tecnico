@@ -129,6 +129,15 @@ internal sealed class FakePersonRepository : IPersonRepository
 
     public void RecordSaveChanges() => SaveChangesCount++;
 
+    /// <summary>
+    /// Returns all phones across all stored persons. Used by
+    /// <see cref="FakePhoneRepository"/> to mirror EF Core's ability to query
+    /// phones through the DbContext even when they were added via the Person
+    /// aggregate's navigation property.
+    /// </summary>
+    public IEnumerable<Phone> AllPhones()
+        => _byId.Values.SelectMany(p => p.Phones);
+
     private static string ExtractDigits(string input)
     {
         Span<char> buffer = stackalloc char[11];
