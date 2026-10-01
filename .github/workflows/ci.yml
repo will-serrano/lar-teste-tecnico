@@ -1,0 +1,126 @@
+name: CI
+
+# Stage 5 — pipeline that mirrors the Definition of Done. Each step has a
+# single responsibility so failures point at the failing concern without
+# obscuring the rest of the report.
+
+on:
+  push:
+    branches: [ main, develop, feature/** ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+
+jobs:
+  build:
+    name: Build, test & analyse
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 6 SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # ---- Restore + Build -----------------------------------------------
+      - name: Restore
+        run: dotnet restore CandidateAssessment.sln
+
+      - name: Build
+        run: dotnet build CandidateAssessment.sln -c Release --no-restore /warnaserror:NETSDK1138
+        # NETSDK1138 (EOL framework) is escalated to an error in CI even
+        # though the assessment requires net6.0. This guards the build
+        # against accidental upgrade to an unsupported target while
+        # preserving the project's documented .NET 6 commitment.
+
+      # ---- Formatting gate ----------------------------------------------
+      - name: Verify formatting
+        run: dotnet format CandidateAssessment.sln --verify-no-changes --verbosity diagnostic
+
+      # ---- Tests + coverage ----------------------------------------------
+      - name: Run unit tests with coverage
+        run: >
+          dotnet test tests/CandidateAssessment.UnitTests/CandidateAssessment.UnitTests.csproj
+          -c Release --no-build
+          --settings coverlet.runsettings
+          --collect:"XPlat Code Coverage"
+          --results-directory ./coverage/unit
+
+      - name: Run integration tests with coverage
+        run: >
+          dotnet test tests/CandidateAssessment.IntegrationTests/CandidateAssessment.IntegrationTests.csproj
+          -c Release --no-build
+          --settings coverlet.runsettings
+          --collect:"XPlat Code Coverage"
+          --results-directory ./coverage/integration
+
+      # ---- Coverage summary (printed; can be uploaded to a service later) -
+      - name: Summarise coverage
+        shell: pwsh
+        run: |
+          $results = Get-ChildItem -Path ./coverage -Recurse -Filter coverage.cobertura.xml
+          if (-not $results) { Write-Error "No coverage reports produced."; exit 1 }
+          $totalLines = 0; $coveredLines = 0
+          foreach ($file in $results) {
+              [xml]$xml = Get-Content $file.FullName -Raw
+              $pkg = $xml.coverage.packages.package
+              Write-Host ("## $($file.FullName)")
+              foreach ($p in @($pkg)) {
+                  $lr = [double]$p.'line-rate'
+                  Write-Host ("  - {0,-32} line {1:P1}" -f $p.name, $lr)
+                  $totalLines  += [int]$p.'lines'.line | Measure-Object | Select-Object -ExpandProperty Count
+              }
+          }
+          Write-Host "`nCoverage collected. Reports stored under ./coverage/."
+
+      # ---- Build a Docker image so the pipeline also proves the Dockerfile
+      - name: Build Docker image
+        run: docker build -t candidateassessment-api:ci .
+
+      - name: Smoke-test Docker image
+        run: |
+          docker run --rm -d --name candidate-ci -p 8080:8080 \
+            -e ASPNETCORE_ENVIRONMENT=Production \
+            -e Jwt__SigningKey="REPLACE-WITH-AT-LEAST-32-BYTES-SECRET-IN-PRODUCTION" \
+            -e ConnectionStrings__DefaultConnection="Data Source=/tmp/candidate.db" \
+            candidateassessment-api:ci
+          # Wait up to ~60s for the readiness probe to come back 200.
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8080/health/ready >/dev/null 2>&1; then
+              echo "Container is healthy."
+              curl -fsS http://localhost:8080/health
+              docker stop candidate-ci
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Container failed health check."
+          docker logs candidate-ci
+          docker stop candidate-ci || true
+          exit 1
+
+      # ---- Upload coverage as an artifact --------------------------------
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30

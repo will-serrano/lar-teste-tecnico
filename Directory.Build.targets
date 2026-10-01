@@ -1,0 +1,24 @@
+<Project>
+
+  <!--
+    Applied after each project's own targets.
+
+    * Migrations folder — EF Core generates migrations with inline array
+      literals that trip CA1861. Fixing them by hand breaks the next
+      `dotnet ef migrations add`, so suppress CA1861 there.
+    * Tests projects — xUnit's naming convention `Should_X_When_Y` triggers
+      CA1707 for every test method; that warning is noise for the
+      assessment and would otherwise dominate the build output.
+  -->
+
+  <PropertyGroup Condition="$(MSBuildProjectName.Contains('Tests'))">
+    <NoWarn>$(NoWarn);CA1707;CA1711</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Update="**/Migrations/*.cs">
+      <NoWarn>$(NoWarn);CA1861</NoWarn>
+    </Compile>
+  </ItemGroup>
+
+</Project>

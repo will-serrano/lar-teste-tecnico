@@ -19,7 +19,8 @@ public sealed class PersonCacheInvalidator : IPersonCache
 
     public Task InvalidateAsync(Guid personId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(personId);
+        // personId is a value type, so an explicit null check is redundant
+        // (CA2264). Cancellation is forwarded to the underlying cache call.
         return _cache.RemoveAsync(PersonCacheKeys.ForDetail(personId), cancellationToken);
     }
 }

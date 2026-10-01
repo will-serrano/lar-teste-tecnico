@@ -1,0 +1,36 @@
+<Project>
+
+  <!--
+    Centralized MSBuild properties applied to every project in the solution.
+
+    The plan deliberately keeps TreatWarningsAsErrors off so warnings remain
+    guidance rather than build failures. NETSDK1138 is suppressed because the
+    assessment requires net6.0 even though it is end-of-life. The .NET SDK
+    ships NetAnalyzers (enabled here) so no explicit package reference is
+    needed; pinning via EnableNETAnalyzers + AnalysisMode keeps behaviour
+    consistent across SDK versions used in local and CI.
+
+    Per-rule suppression summary:
+      * CA1014 — CLSCompliant attribute noise on net6.0-only solution.
+      * CA1848 — LoggerMessage source generator suggestion; the readability
+        of ILogger.LogInformation/LogError outweighs the perf micro-opt here.
+      * CA1873 — CultureInfo caching for log arguments; pass-through logging
+        already runs at information level and the cost is negligible.
+      * CA1305 — culture-dependent APIs; spot-fixed in tests via
+        IFormatProvider, suppressed elsewhere because culture-bound formatting
+        is acceptable for assessment logging output.
+  -->
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors)</WarningsNotAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <NoWarn>$(NoWarn);NETSDK1138;CA1014;CA1848;CA1873;CA1305</NoWarn>
+  </PropertyGroup>
+
+</Project>

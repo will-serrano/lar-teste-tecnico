@@ -49,17 +49,17 @@ internal static class PersonMappings
         DateTime updatedAtUtc,
         DateTime? deletedAtUtc,
         DateTime? restoredAtUtc) => new()
-    {
-        Id = id,
-        Name = name,
-        Cpf = Cpf.Create(cpf).Format(),
-        BirthDate = birthDate,
-        IsActive = isActive,
-        CreatedAtUtc = createdAtUtc,
-        UpdatedAtUtc = updatedAtUtc,
-        DeletedAtUtc = deletedAtUtc,
-        RestoredAtUtc = restoredAtUtc,
-    };
+        {
+            Id = id,
+            Name = name,
+            Cpf = Cpf.Create(cpf).Format(),
+            BirthDate = birthDate,
+            IsActive = isActive,
+            CreatedAtUtc = createdAtUtc,
+            UpdatedAtUtc = updatedAtUtc,
+            DeletedAtUtc = deletedAtUtc,
+            RestoredAtUtc = restoredAtUtc,
+        };
 
     public static PagedResponse<PersonResponse> ToResponse<TDomain>(
         this PagedResult<TDomain> result,

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <!--
+    Coverlet settings used by both `dotnet test` and the CI workflow.
+
+    * Format — cobertura is the de-facto standard consumable by GitHub
+      Actions coverage badges and code review integrations.
+    * ExcludeByAttribute — keeps generated and infra-only code out of the
+      reported coverage (migrations, DI composition, integration test
+      fakes, design-time factories).
+    * ExcludeByFile — coverage tooling should not chase unreachable paths
+      inside generated migration code.
+  -->
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <ExcludeByAttribute>Obsolete,GeneratedCode,CompilerGenerated</ExcludeByAttribute>
+          <ExcludeByFile>**/Migrations/*.cs,**/bin/**,**/obj/**</ExcludeByFile>
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+          <SingleHit>false</SingleHit>
+          <UseSourceLink>true</UseSourceLink>
+          <IncludeDirectory>**/CandidateAssessment.*/bin/**</IncludeDirectory>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

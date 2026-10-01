@@ -95,15 +95,21 @@ public sealed record class Cpf
         return true;
     }
 
+    // Weight arrays are immutable lookup tables for the CPF check-digit
+    // algorithm. Hoisting them to static readonly fields avoids allocating a
+    // fresh array on every validation (CA1861).
+    private static readonly int[] FirstCheckDigitWeights = { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+    private static readonly int[] SecondCheckDigitWeights = { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+
     private static bool HasValidCheckDigits(string digits)
     {
-        var first = ComputeCheckDigit(digits, 9, new[] { 10, 9, 8, 7, 6, 5, 4, 3, 2 });
+        var first = ComputeCheckDigit(digits, 9, FirstCheckDigitWeights);
         if (first != digits[9] - '0')
         {
             return false;
         }
 
-        var second = ComputeCheckDigit(digits, 10, new[] { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 });
+        var second = ComputeCheckDigit(digits, 10, SecondCheckDigitWeights);
         return second == digits[10] - '0';
     }
 

@@ -396,5 +396,9 @@ FodyWeavers.xsd
 *.db-shm
 *.db-wal
 
+# Coverlet/CI coverage output directories produced by `dotnet test --collect`
+# and by the CI workflow. Generated alongside tests and never tracked.
+/coverage/
+
 # Antigravity
 .agents/
