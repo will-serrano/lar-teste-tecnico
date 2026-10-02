@@ -48,6 +48,39 @@ public class PhonesApiTests
     }
 
     [Fact]
+    public async Task Should_GetAndUpdatePhone_When_PhoneExists()
+    {
+        var admin = await _factory.CreateAuthenticatedAdminClientAsync();
+        var personId = await CreatePersonAsync(admin);
+        var create = await admin.PostAsJsonAsync(
+            $"/api/v1/persons/{personId}/phones",
+            new { type = "Mobile", number = "13999999999" });
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        var created = await create.Content.ReadFromJsonAsync<PhoneResponse>(JsonOptions);
+        Assert.NotNull(created);
+
+        var get = await admin.GetAsync(
+            $"/api/v1/persons/{personId}/phones/{created!.Id}");
+        Assert.Equal(HttpStatusCode.OK, get.StatusCode);
+        var fetched = await get.Content.ReadFromJsonAsync<PhoneResponse>(JsonOptions);
+        Assert.NotNull(fetched);
+        Assert.Equal("Mobile", fetched!.Type);
+        Assert.Equal("13999999999", fetched.Number);
+
+        var update = await admin.PutAsJsonAsync(
+            $"/api/v1/persons/{personId}/phones/{created.Id}",
+            new { type = "Residential", number = "1133334444" });
+        Assert.Equal(HttpStatusCode.NoContent, update.StatusCode);
+
+        var updated = await admin.GetFromJsonAsync<PhoneResponse>(
+            $"/api/v1/persons/{personId}/phones/{created.Id}",
+            JsonOptions);
+        Assert.NotNull(updated);
+        Assert.Equal("Residential", updated!.Type);
+        Assert.Equal("1133334444", updated.Number);
+    }
+
+    [Fact]
     public async Task Should_ReturnForbidden_When_UserAttemptsToAddPhone()
     {
         var admin = await _factory.CreateAuthenticatedAdminClientAsync();

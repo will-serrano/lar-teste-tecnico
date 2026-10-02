@@ -290,8 +290,8 @@ dotnet test CandidateAssessment.sln
 
 | Projeto | Quantidade | Tipo |
 |---|---:|---|
-| `CandidateAssessment.UnitTests` | 114 | Domain + Application (fakes) |
-| `CandidateAssessment.IntegrationTests` | 35 | HTTP → EF → SQLite (WebApplicationFactory) |
+| `CandidateAssessment.UnitTests` | 122 | Domain + Application (fakes) |
+| `CandidateAssessment.IntegrationTests` | 38 | HTTP → EF → SQLite (WebApplicationFactory) |
 
 Os testes de integração sobem a aplicação real em memória de processo e
 apontam para um SQLite temporário. O `[Collection]`-based fan-out evita
