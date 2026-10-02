@@ -56,6 +56,81 @@ public class PersonsApiTests
     }
 
     [Fact]
+    public async Task Should_ReturnAuditTimestampsOnCreate_When_RequestIsValid()
+    {
+        // Regression: the controller used to hand-build the response from the
+        // request DTO, omitting CreatedAtUtc/UpdatedAtUtc. Those fields then
+        // surfaced as DateTime.MinValue ("0001-01-01T00:00:00") to API consumers.
+        var client = await _factory.CreateAuthenticatedAdminClientAsync();
+        var before = DateTime.UtcNow.AddSeconds(-1);
+        var request = new
+        {
+            name = "Willian Serrano",
+            cpf = UniqueCpf(),
+            birthDate = "1988-11-24",
+        };
+
+        var createResponse = await client.PostAsJsonAsync("/api/v1/persons", request);
+
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<PersonResponse>(JsonOptions);
+        Assert.NotNull(created);
+        var after = DateTime.UtcNow.AddSeconds(1);
+
+        Assert.NotEqual(default, created!.CreatedAtUtc);
+        Assert.NotEqual(default, created.UpdatedAtUtc);
+        Assert.InRange(created.CreatedAtUtc, before, after);
+        Assert.InRange(created.UpdatedAtUtc, before, after);
+        Assert.Equal(created.CreatedAtUtc, created.UpdatedAtUtc);
+        Assert.Null(created.DeletedAtUtc);
+        Assert.Null(created.RestoredAtUtc);
+
+        // The follow-up GET must agree with what Create returned — both go
+        // through the same mapping, so this also locks down consistency between
+        // the create path and the read path.
+        var fetched = await client.GetFromJsonAsync<PersonResponse>(
+            $"/api/v1/persons/{created.Id}",
+            JsonOptions);
+        Assert.NotNull(fetched);
+        Assert.Equal(created.CreatedAtUtc, fetched!.CreatedAtUtc);
+        Assert.Equal(created.UpdatedAtUtc, fetched.UpdatedAtUtc);
+    }
+
+    [Fact]
+    public async Task Should_AdvanceUpdatedAtUtc_WhenPersonIsUpdated()
+    {
+        // After PUT, UpdatedAtUtc must change and CreatedAtUtc must stay
+        // pinned to the original creation moment.
+        var client = await _factory.CreateAuthenticatedAdminClientAsync();
+        var create = await client.PostAsJsonAsync("/api/v1/persons", new
+        {
+            name = "Maria",
+            cpf = UniqueCpf(),
+            birthDate = "1990-01-01",
+        });
+        var created = await create.Content.ReadFromJsonAsync<PersonResponse>(JsonOptions);
+        Assert.NotNull(created);
+
+        var updateResponse = await client.PutAsJsonAsync(
+            $"/api/v1/persons/{created!.Id}",
+            new
+            {
+                name = "Maria Updated",
+                birthDate = "1991-02-02",
+            });
+        Assert.Equal(HttpStatusCode.NoContent, updateResponse.StatusCode);
+
+        var fetched = await client.GetFromJsonAsync<PersonResponse>(
+            $"/api/v1/persons/{created.Id}",
+            JsonOptions);
+        Assert.NotNull(fetched);
+        Assert.Equal(created.CreatedAtUtc, fetched!.CreatedAtUtc);
+        Assert.NotEqual(created.UpdatedAtUtc, fetched.UpdatedAtUtc);
+        Assert.Null(fetched.DeletedAtUtc);
+        Assert.Null(fetched.RestoredAtUtc);
+    }
+
+    [Fact]
     public async Task Should_ReturnBadRequest_When_NameIsBlank()
     {
         var client = await _factory.CreateAuthenticatedAdminClientAsync();

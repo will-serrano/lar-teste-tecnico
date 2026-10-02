@@ -89,16 +89,14 @@ public class PersonsController : ControllerBase
         var command = new CreatePersonCommand(request.Name, request.Cpf, request.BirthDate);
         var id = await _createHandler.HandleAsync(command, cancellationToken);
 
-        var response = new PersonResponse
-        {
-            Id = id,
-            Name = request.Name.Trim(),
-            Cpf = CpfFormatter.Format(request.Cpf),
-            BirthDate = request.BirthDate,
-            IsActive = true,
-        };
+        // Re-read the person so the 201 response carries the timestamps persisted by
+        // the domain (CreatedAtUtc/UpdatedAtUtc). Building the DTO directly from the
+        // request — as the previous version did — silently dropped those fields and
+        // made them surface as DateTime.MinValue (0001-01-01T00:00:00). Mirrors the
+        // pattern already used by PhonesController.Create.
+        var cached = await _getByIdHandler.HandleAsync(new GetPersonByIdQuery(id), cancellationToken);
 
-        return CreatedAtAction(nameof(GetById), new { id }, response);
+        return CreatedAtAction(nameof(GetById), new { id }, cached.ToResponse());
     }
 
     [HttpGet("{id:guid}")]

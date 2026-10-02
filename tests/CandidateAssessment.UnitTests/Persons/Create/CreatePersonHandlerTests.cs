@@ -88,4 +88,30 @@ public class CreatePersonHandlerTests
 
         Assert.True(cache.RemoveCount >= 1);
     }
+
+    [Fact]
+    public async Task Should_StampAuditTimestampsFromDateProvider_OnPersist()
+    {
+        // Regression: the controller used to build the PersonResponse DTO from
+        // the request, omitting CreatedAtUtc/UpdatedAtUtc. Even though the
+        // domain stamps them correctly, the API was returning zeros. This test
+        // locks down that the persisted entity carries the real timestamps
+        // supplied by IDateTimeProvider, so a future handler that exposes the
+        // entity (or maps it directly) cannot regress silently.
+        var repo = new FakePersonRepository();
+        var uow = new FakeUnitOfWork();
+        var clock = new FixedDateTimeProvider(FixedNow);
+        var (_, personCache) = TestCacheFactory.Create();
+        var handler = new CreatePersonHandler(repo, uow, clock, personCache);
+
+        var id = await handler.HandleAsync(
+            new CreatePersonCommand("Maria", "123.456.789-09", new DateOnly(1990, 1, 1)));
+
+        var stored = await repo.GetByIdAsync(id);
+        Assert.NotNull(stored);
+        Assert.Equal(FixedNow, stored!.CreatedAtUtc);
+        Assert.Equal(FixedNow, stored.UpdatedAtUtc);
+        Assert.Null(stored.DeletedAtUtc);
+        Assert.Null(stored.RestoredAtUtc);
+    }
 }
