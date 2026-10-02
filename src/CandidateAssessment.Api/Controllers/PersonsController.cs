@@ -31,6 +31,8 @@ public class PersonsController : ControllerBase
     private readonly GetDeletedPersonsHandler _getDeletedHandler;
     private readonly IValidator<CreatePersonRequest> _createValidator;
     private readonly IValidator<UpdatePersonRequest> _updateValidator;
+    private readonly IValidator<SearchPersonsQuery> _searchValidator;
+    private readonly IValidator<GetDeletedPersonsQuery> _getDeletedValidator;
 
     public PersonsController(
         CreatePersonHandler createHandler,
@@ -41,7 +43,9 @@ public class PersonsController : ControllerBase
         RestorePersonHandler restoreHandler,
         GetDeletedPersonsHandler getDeletedHandler,
         IValidator<CreatePersonRequest> createValidator,
-        IValidator<UpdatePersonRequest> updateValidator)
+        IValidator<UpdatePersonRequest> updateValidator,
+        IValidator<SearchPersonsQuery> searchValidator,
+        IValidator<GetDeletedPersonsQuery> getDeletedValidator)
     {
         _createHandler = createHandler;
         _getByIdHandler = getByIdHandler;
@@ -52,6 +56,8 @@ public class PersonsController : ControllerBase
         _getDeletedHandler = getDeletedHandler;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
+        _searchValidator = searchValidator;
+        _getDeletedValidator = getDeletedValidator;
     }
 
     [HttpPost]
@@ -124,6 +130,20 @@ public class PersonsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var query = new SearchPersonsQuery(name, cpf, page, pageSize);
+
+        var validation = await _searchValidator.ValidateAsync(query, cancellationToken);
+        if (!validation.IsValid)
+        {
+            foreach (var error in validation.Errors)
+            {
+                ModelState.AddModelError(
+                    string.IsNullOrEmpty(error.PropertyName) ? "query" : error.PropertyName,
+                    error.ErrorMessage);
+            }
+
+            return ValidationProblem(ModelState);
+        }
+
         var result = await _searchHandler.HandleAsync(query, cancellationToken);
         return Ok(result.ToResponse(p => p.ToResponse()));
     }
@@ -200,6 +220,20 @@ public class PersonsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var query = new GetDeletedPersonsQuery(page, pageSize);
+
+        var validation = await _getDeletedValidator.ValidateAsync(query, cancellationToken);
+        if (!validation.IsValid)
+        {
+            foreach (var error in validation.Errors)
+            {
+                ModelState.AddModelError(
+                    string.IsNullOrEmpty(error.PropertyName) ? "query" : error.PropertyName,
+                    error.ErrorMessage);
+            }
+
+            return ValidationProblem(ModelState);
+        }
+
         var result = await _getDeletedHandler.HandleAsync(query, cancellationToken);
         return Ok(result.ToResponse(p => p.ToResponse()));
     }

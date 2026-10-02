@@ -1,11 +1,11 @@
 using CandidateAssessment.Application.Abstractions.Pagination;
 using FluentValidation;
 
-namespace CandidateAssessment.Application.Persons.Search;
+namespace CandidateAssessment.Application.Persons.GetDeleted;
 
-public sealed class SearchPersonsValidator : AbstractValidator<SearchPersonsQuery>
+public sealed class GetDeletedPersonsValidator : AbstractValidator<GetDeletedPersonsQuery>
 {
-    public SearchPersonsValidator()
+    public GetDeletedPersonsValidator()
     {
         RuleFor(q => q.Page)
             .GreaterThanOrEqualTo(1)
@@ -18,17 +18,5 @@ public sealed class SearchPersonsValidator : AbstractValidator<SearchPersonsQuer
             .LessThanOrEqualTo(PaginationOptions.MaxPageSize)
             .WithMessage($"PageSize cannot exceed {PaginationOptions.MaxPageSize}.")
             .When(q => q.PageSize.HasValue);
-
-        RuleFor(q => q.Name)
-            .MaximumLength(PersonMaxName)
-            .WithMessage("Name filter cannot exceed 100 characters.")
-            .When(q => !string.IsNullOrEmpty(q.Name));
-
-        RuleFor(q => q.Cpf)
-            .MaximumLength(14)
-            .WithMessage("Cpf filter is too long.")
-            .When(q => !string.IsNullOrEmpty(q.Cpf));
     }
-
-    private const int PersonMaxName = 100;
 }
