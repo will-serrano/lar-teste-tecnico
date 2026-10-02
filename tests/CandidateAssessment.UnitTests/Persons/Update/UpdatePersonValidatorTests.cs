@@ -1,6 +1,5 @@
 using CandidateAssessment.Application.Persons.Update;
 using FluentValidation.TestHelper;
-using Xunit;
 
 namespace CandidateAssessment.UnitTests.Persons.Update;
 

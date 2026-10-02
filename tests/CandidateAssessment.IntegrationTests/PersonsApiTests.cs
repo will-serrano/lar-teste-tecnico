@@ -2,8 +2,8 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using CandidateAssessment.Api.Serialization;
+using CandidateAssessment.Domain.ValueObjects;
 using CandidateAssessment.IntegrationTests.Infrastructure;
-using Xunit;
 
 namespace CandidateAssessment.IntegrationTests;
 
@@ -46,13 +46,25 @@ public class PersonsApiTests
         Assert.NotNull(created);
         Assert.NotEqual(Guid.Empty, created!.Id);
         Assert.Equal("Maria Souza", created.Name);
+        Assert.Equal(Cpf.Create(cpf).Format(), created.Cpf);
+        Assert.Equal(new DateOnly(1990, 5, 20), created.BirthDate);
         Assert.True(created.IsActive);
 
         var getResponse = await client.GetAsync($"/api/v1/persons/{created.Id}");
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
         var fetched = await getResponse.Content.ReadFromJsonAsync<PersonResponse>(JsonOptions);
         Assert.NotNull(fetched);
-        Assert.Equal(created.Id, fetched!.Id);
+        AssertSameResponse(created, fetched!);
+
+        var cached = await client.GetFromJsonAsync<PersonResponse>(
+            $"/api/v1/persons/{created.Id}", JsonOptions);
+        Assert.NotNull(cached);
+        AssertSameResponse(created, cached!);
+
+        var page = await client.GetFromJsonAsync<PagedResponse<PersonResponse>>(
+            "/api/v1/persons?name=Maria%20Souza&pageSize=100", JsonOptions);
+        Assert.NotNull(page);
+        AssertSameResponse(created, Assert.Single(page!.Items, person => person.Id == created.Id));
     }
 
     [Fact]
@@ -85,9 +97,7 @@ public class PersonsApiTests
         Assert.Null(created.DeletedAtUtc);
         Assert.Null(created.RestoredAtUtc);
 
-        // The follow-up GET must agree with what Create returned — both go
-        // through the same mapping, so this also locks down consistency between
-        // the create path and the read path.
+        // Create maps the entity; GET maps the cached snapshot.
         var fetched = await client.GetFromJsonAsync<PersonResponse>(
             $"/api/v1/persons/{created.Id}",
             JsonOptions);
@@ -310,7 +320,15 @@ public class PersonsApiTests
             "/api/v1/persons/deleted",
             JsonOptions);
         Assert.NotNull(deletedList);
-        Assert.Contains(deletedList!.Items, p => p.Id == created.Id);
+        var deleted = Assert.Single(deletedList!.Items, p => p.Id == created.Id);
+        Assert.Equal(created.Name, deleted.Name);
+        Assert.Equal(created.Cpf, deleted.Cpf);
+        Assert.Equal(created.BirthDate, deleted.BirthDate);
+        Assert.Equal(created.CreatedAtUtc, deleted.CreatedAtUtc);
+        Assert.False(deleted.IsActive);
+        Assert.NotNull(deleted.DeletedAtUtc);
+        Assert.Equal(deleted.DeletedAtUtc, deleted.UpdatedAtUtc);
+        Assert.Null(deleted.RestoredAtUtc);
 
         var restoreResponse = await client.PostAsync(
             $"/api/v1/persons/{created.Id}/restore",
@@ -319,6 +337,22 @@ public class PersonsApiTests
 
         var getAfterRestore = await client.GetAsync($"/api/v1/persons/{created.Id}");
         Assert.Equal(HttpStatusCode.OK, getAfterRestore.StatusCode);
+        var restored = await getAfterRestore.Content.ReadFromJsonAsync<PersonResponse>(JsonOptions);
+        Assert.NotNull(restored);
+        Assert.Equal(created.Id, restored!.Id);
+        Assert.Equal(created.Name, restored.Name);
+        Assert.Equal(created.Cpf, restored.Cpf);
+        Assert.Equal(created.BirthDate, restored.BirthDate);
+        Assert.Equal(created.CreatedAtUtc, restored.CreatedAtUtc);
+        Assert.True(restored.IsActive);
+        Assert.Equal(deleted.DeletedAtUtc, restored.DeletedAtUtc);
+        Assert.NotNull(restored.RestoredAtUtc);
+        Assert.Equal(restored.RestoredAtUtc, restored.UpdatedAtUtc);
+
+        var cachedRestored = await client.GetFromJsonAsync<PersonResponse>(
+            $"/api/v1/persons/{created.Id}", JsonOptions);
+        Assert.NotNull(cachedRestored);
+        AssertSameResponse(restored, cachedRestored!);
     }
 
     [Fact]
@@ -334,13 +368,26 @@ public class PersonsApiTests
         Assert.Equal(404, status.GetInt32());
     }
 
+    private static void AssertSameResponse(PersonResponse expected, PersonResponse actual)
+    {
+        Assert.Equal(expected.Id, actual.Id);
+        Assert.Equal(expected.Name, actual.Name);
+        Assert.Equal(expected.Cpf, actual.Cpf);
+        Assert.Equal(expected.BirthDate, actual.BirthDate);
+        Assert.Equal(expected.IsActive, actual.IsActive);
+        Assert.Equal(expected.CreatedAtUtc, actual.CreatedAtUtc);
+        Assert.Equal(expected.UpdatedAtUtc, actual.UpdatedAtUtc);
+        Assert.Equal(expected.DeletedAtUtc, actual.DeletedAtUtc);
+        Assert.Equal(expected.RestoredAtUtc, actual.RestoredAtUtc);
+    }
+
     /// <summary>
     /// Generates a unique, mathematically valid CPF per call.
     /// </summary>
     private static string UniqueCpf()
     {
         var hex = Guid.NewGuid().ToString("N");
-        Span<char> digits = stackalloc char[11];
+        var digits = new char[11];
 
         for (var i = 0; i < 11; i++)
         {
@@ -350,7 +397,7 @@ public class PersonsApiTests
             digits[i] = (char)('0' + (n % 10));
         }
 
-        int[] weights1 = { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+        int[] weights1 = [10, 9, 8, 7, 6, 5, 4, 3, 2];
         var sum1 = 0;
         for (var i = 0; i < 9; i++)
         {
@@ -360,7 +407,7 @@ public class PersonsApiTests
         var remainder1 = sum1 % 11;
         digits[9] = (char)('0' + (remainder1 < 2 ? 0 : 11 - remainder1));
 
-        int[] weights2 = { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+        int[] weights2 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
         var sum2 = 0;
         for (var i = 0; i < 10; i++)
         {
@@ -396,7 +443,7 @@ public class PersonsApiTests
 
     private sealed class PagedResponse<T>
     {
-        public IReadOnlyList<T> Items { get; init; } = Array.Empty<T>();
+        public IReadOnlyList<T> Items { get; init; } = [];
 
         public int Page { get; init; }
 

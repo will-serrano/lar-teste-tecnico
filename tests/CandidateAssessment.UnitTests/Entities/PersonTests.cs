@@ -2,7 +2,6 @@ using CandidateAssessment.Domain.Entities;
 using CandidateAssessment.Domain.Enums;
 using CandidateAssessment.Domain.Exceptions;
 using CandidateAssessment.Domain.ValueObjects;
-using Xunit;
 
 namespace CandidateAssessment.UnitTests.Entities;
 
@@ -31,16 +30,47 @@ public class PersonTests
         Assert.Null(person.RestoredAtUtc);
     }
 
-    [Fact]
-    public void Create_ShouldNormalizeName()
+    [Theory]
+    [InlineData("  Maria  ", "Maria")]
+    [InlineData("Maria   da  Silva", "Maria da Silva")]
+    [InlineData("Maria\tSilva", "Maria Silva")]
+    [InlineData("Maria\nSilva", "Maria Silva")]
+    [InlineData("Maria\u00A0Silva", "Maria Silva")]
+    [InlineData("\tMaria \r\n da\u2003Silva  ", "Maria da Silva")]
+    public void Create_ShouldNormalizeName(string input, string expected)
     {
         var person = Person.Create(
-            "  Maria  ",
+            input,
             Cpf.Create("12345678909"),
             new DateOnly(1990, 1, 1),
             FixedNow);
 
-        Assert.Equal("Maria", person.Name);
+        Assert.Equal(expected, person.Name);
+    }
+
+    [Fact]
+    public void Create_ShouldValidateNameLength_AfterCollapsingWhitespace()
+    {
+        var person = Person.Create(
+            $"Maria{new string(' ', 300)}Silva",
+            Cpf.Create("12345678909"),
+            new DateOnly(1990, 1, 1),
+            FixedNow);
+
+        Assert.Equal("Maria Silva", person.Name);
+    }
+
+    [Theory]
+    [InlineData("  Maria   Silva  ")]
+    [InlineData("Maria\tSilva")]
+    [InlineData("Maria\u00A0Silva")]
+    public void Update_ShouldNormalizeName(string input)
+    {
+        var person = BuildPerson();
+
+        person.Update(input, person.BirthDate, FixedNow.AddDays(1));
+
+        Assert.Equal("Maria Silva", person.Name);
     }
 
     [Theory]

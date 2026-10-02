@@ -16,7 +16,7 @@ public sealed class SerilogOptions
     /// <summary>
     /// Override the minimum level for the given logger namespaces.
     /// </summary>
-    public Dictionary<string, string> Overrides { get; set; } = new();
+    public Dictionary<string, string> Overrides { get; set; } = [];
 
     /// <summary>
     /// When true, writes structured events to the console.

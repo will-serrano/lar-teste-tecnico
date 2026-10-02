@@ -30,14 +30,9 @@ public sealed class DeletePersonHandler
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var person = await _personRepository.GetByIdAsync(command.Id, cancellationToken);
-        if (person is null)
-        {
-            throw new ApplicationValidationException(
+        var person = await _personRepository.GetByIdAsync(command.Id, cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
                 $"Person with id '{command.Id}' was not found.");
-        }
-
         var nowUtc = _dateTimeProvider.UtcNow;
         person.Delete(nowUtc);
 

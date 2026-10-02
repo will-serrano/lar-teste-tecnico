@@ -2,7 +2,6 @@ using CandidateAssessment.Application.Exceptions;
 using CandidateAssessment.Application.Phones.Create;
 using CandidateAssessment.Domain.Enums;
 using CandidateAssessment.UnitTests.Fakes;
-using Xunit;
 
 namespace CandidateAssessment.UnitTests.Phones.Create;
 

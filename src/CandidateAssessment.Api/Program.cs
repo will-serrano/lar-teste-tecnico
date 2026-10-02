@@ -74,18 +74,13 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
-        app.UseSwaggerUI(c =>
-        {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-        });
+        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1"));
     }
 
     // Promote ASP.NET Core's TraceIdentifier (or Activity.Id when present)
     // into every log event's properties, so logs and ProblemDetails share the
     // same correlation id without manual wiring.
-    app.UseSerilogRequestLogging(opts =>
-    {
-        opts.EnrichDiagnosticContext = (diag, http) =>
+    app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = (diag, http) =>
         {
             var traceId = Activity.Current?.Id ?? http.TraceIdentifier;
             diag.Set("TraceId", traceId);
@@ -93,8 +88,7 @@ try
             diag.Set("RequestMethod", http.Request.Method);
             diag.Set("ClientIp", http.Connection.RemoteIpAddress?.ToString());
             diag.Set("UserAgent", http.Request.Headers.UserAgent.ToString());
-        };
-    });
+        });
 
     app.UseMiddleware<IdentitySeedMiddleware>();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -116,7 +110,7 @@ try
         Predicate = _ => false,
     });
 
-    app.Run();
+    await app.RunAsync();
 
     Log.Information("Candidate Assessment API started on environment {Environment}", app.Environment.EnvironmentName);
 }

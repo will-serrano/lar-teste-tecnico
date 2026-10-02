@@ -6,7 +6,6 @@ using CandidateAssessment.Domain.ValueObjects;
 using CandidateAssessment.UnitTests.Fakes;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace CandidateAssessment.UnitTests.Persons.GetById;
 

@@ -3,7 +3,6 @@ using CandidateAssessment.Application.Persons.Update;
 using CandidateAssessment.Domain.Entities;
 using CandidateAssessment.Domain.ValueObjects;
 using CandidateAssessment.UnitTests.Fakes;
-using Xunit;
 
 namespace CandidateAssessment.UnitTests.Persons.Update;
 
@@ -19,7 +18,7 @@ public class UpdatePersonHandlerTests
         var uow = new FakeUnitOfWork();
         var clock = new FixedDateTimeProvider(FixedNow);
         var (_, personCache) = TestCacheFactory.Create();
-        var handler = new UpdatePersonHandler(repo, uow, clock, personCache);
+        _ = new UpdatePersonHandler(repo, uow, clock, personCache);
 
         var cpf = Cpf.Create("12345678909");
         var person = Person.Create("Maria", cpf, new DateOnly(1990, 1, 1), FixedNow);

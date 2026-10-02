@@ -19,17 +19,11 @@ public sealed class ListPhonesHandler
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        var person = await _personRepository.GetByIdAsync(query.PersonId, cancellationToken);
-        if (person is null)
-        {
-            throw new ApplicationValidationException(
+        var person = await _personRepository.GetByIdAsync(query.PersonId, cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
                 $"Person with id '{query.PersonId}' was not found.");
-        }
-
-        return person.Phones
+        return [.. person.Phones
             .OrderBy(p => p.Type)
-            .ThenBy(p => p.Number)
-            .ToList();
+            .ThenBy(p => p.Number)];
     }
 }

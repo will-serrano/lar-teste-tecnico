@@ -1,7 +1,6 @@
 using CandidateAssessment.Application.Exceptions;
 using CandidateAssessment.Application.Persons.Create;
 using CandidateAssessment.UnitTests.Fakes;
-using Xunit;
 
 namespace CandidateAssessment.UnitTests.Persons.Create;
 
@@ -82,8 +81,7 @@ public class CreatePersonHandlerTests
         var clock = new FixedDateTimeProvider(FixedNow);
         var (cache, personCache) = TestCacheFactory.Create();
         var handler = new CreatePersonHandler(repo, uow, clock, personCache);
-
-        var id = await handler.HandleAsync(
+        _ = await handler.HandleAsync(
             new CreatePersonCommand("Maria", "123.456.789-09", new DateOnly(1990, 1, 1)));
 
         Assert.True(cache.RemoveCount >= 1);

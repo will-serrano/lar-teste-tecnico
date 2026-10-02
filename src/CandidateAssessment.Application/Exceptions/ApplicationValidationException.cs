@@ -25,7 +25,7 @@ public class ApplicationValidationException : Exception
     }
 
     public ApplicationValidationException(string code, string message)
-        : this(new[] { new ApplicationValidationError(code, message) })
+        : this([new ApplicationValidationError(code, message)])
     {
     }
 

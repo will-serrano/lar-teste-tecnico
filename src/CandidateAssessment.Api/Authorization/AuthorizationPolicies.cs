@@ -1,6 +1,5 @@
 namespace CandidateAssessment.Api.Authorization;
 
-using CandidateAssessment.Domain.Roles;
 
 /// <summary>
 /// Named authorization policies. Centralizing them here keeps controllers free

@@ -2,7 +2,6 @@ using CandidateAssessment.Application.Persons.Search;
 using CandidateAssessment.Domain.Entities;
 using CandidateAssessment.Domain.ValueObjects;
 using CandidateAssessment.UnitTests.Fakes;
-using Xunit;
 
 namespace CandidateAssessment.UnitTests.Persons.Search;
 
@@ -42,6 +41,23 @@ public class SearchPersonsHandlerTests
 
         Assert.Single(result.Items);
         Assert.Equal("Bruno Costa", result.Items[0].Name);
+    }
+
+    [Theory]
+    [InlineData("5299822472")]
+    [InlineData("529982247259")]
+    [InlineData("529.982.247-25.9")]
+    [InlineData("abc")]
+    public async Task Should_ReturnNoMatches_When_CpfLengthIsInvalid(string cpf)
+    {
+        var repo = new FakePersonRepository();
+        await SeedPerson(repo, "Bruno Costa", "52998224725");
+        var handler = new SearchPersonsHandler(repo);
+
+        var result = await handler.HandleAsync(new SearchPersonsQuery(null, cpf, null, null));
+
+        Assert.Empty(result.Items);
+        Assert.Equal(0, result.TotalItems);
     }
 
     [Fact]
@@ -113,7 +129,7 @@ public class SearchPersonsHandlerTests
     /// </summary>
     private static string GenerateValidCpf(int index)
     {
-        Span<char> digits = stackalloc char[11];
+        var digits = new char[11];
         var n = index + 1;
         digits[0] = (char)('0' + (n % 10));
         n /= 10;
@@ -128,7 +144,7 @@ public class SearchPersonsHandlerTests
         digits[7] = '3';
         digits[8] = '4';
 
-        int[] weights1 = { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+        int[] weights1 = [10, 9, 8, 7, 6, 5, 4, 3, 2];
         var sum1 = 0;
         for (var i = 0; i < 9; i++)
         {
@@ -138,7 +154,7 @@ public class SearchPersonsHandlerTests
         var remainder1 = sum1 % 11;
         digits[9] = (char)('0' + (remainder1 < 2 ? 0 : 11 - remainder1));
 
-        int[] weights2 = { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+        int[] weights2 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
         var sum2 = 0;
         for (var i = 0; i < 10; i++)
         {

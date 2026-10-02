@@ -1,5 +1,4 @@
 using AspNetCoreRateLimit;
-using Microsoft.Extensions.Configuration;
 
 namespace CandidateAssessment.Api.Extensions;
 

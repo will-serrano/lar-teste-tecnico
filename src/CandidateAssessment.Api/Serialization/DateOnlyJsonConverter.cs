@@ -21,7 +21,7 @@ public sealed class DateOnlyJsonConverter : JsonConverter<DateOnly>
             return default;
         }
 
-        if (DateOnly.TryParseExact(value, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+        if (DateOnly.TryParseExact(value, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly parsed))
         {
             return parsed;
         }

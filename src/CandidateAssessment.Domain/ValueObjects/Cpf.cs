@@ -19,7 +19,7 @@ public sealed record class Cpf
 
     public static Cpf Create(string? input)
     {
-        if (!TryCreate(input, out var cpf))
+        if (!TryCreate(input, out Cpf? cpf))
         {
             throw new DomainException("Invalid CPF.");
         }
@@ -59,27 +59,12 @@ public sealed record class Cpf
 
     public static string Normalize(string input)
     {
-        Span<char> buffer = stackalloc char[Length];
-        var index = 0;
-
-        foreach (var ch in input)
-        {
-            if (char.IsDigit(ch))
-            {
-                if (index >= Length)
-                {
-                    return string.Empty;
-                }
-
-                buffer[index++] = ch;
-            }
-        }
-
-        return index == Length ? new string(buffer) : string.Empty;
+        var digits = new string(input.Where(char.IsDigit).ToArray());
+        return digits.Length == Length ? digits : string.Empty;
     }
 
     public string Format()
-        => $"{Value.AsSpan(0, 3)}.{Value.AsSpan(3, 3)}.{Value.AsSpan(6, 3)}-{Value.AsSpan(9, 2)}";
+        => $"{Value[..3]}.{Value[3..6]}.{Value[6..9]}-{Value[9..]}";
 
     private static bool AllDigitsEqual(string digits)
     {
@@ -98,18 +83,18 @@ public sealed record class Cpf
     // Weight arrays are immutable lookup tables for the CPF check-digit
     // algorithm. Hoisting them to static readonly fields avoids allocating a
     // fresh array on every validation (CA1861).
-    private static readonly int[] FirstCheckDigitWeights = { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
-    private static readonly int[] SecondCheckDigitWeights = { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+    private static readonly int[] _firstCheckDigitWeights = [10, 9, 8, 7, 6, 5, 4, 3, 2];
+    private static readonly int[] _secondCheckDigitWeights = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
 
     private static bool HasValidCheckDigits(string digits)
     {
-        var first = ComputeCheckDigit(digits, 9, FirstCheckDigitWeights);
+        var first = ComputeCheckDigit(digits, 9, _firstCheckDigitWeights);
         if (first != digits[9] - '0')
         {
             return false;
         }
 
-        var second = ComputeCheckDigit(digits, 10, SecondCheckDigitWeights);
+        var second = ComputeCheckDigit(digits, 10, _secondCheckDigitWeights);
         return second == digits[10] - '0';
     }
 

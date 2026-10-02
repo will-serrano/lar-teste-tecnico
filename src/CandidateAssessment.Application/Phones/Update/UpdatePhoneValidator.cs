@@ -1,4 +1,3 @@
-using CandidateAssessment.Domain.Enums;
 using CandidateAssessment.Domain.ValueObjects;
 using FluentValidation;
 

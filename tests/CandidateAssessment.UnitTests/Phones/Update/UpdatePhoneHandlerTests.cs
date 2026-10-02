@@ -3,7 +3,6 @@ using CandidateAssessment.Application.Phones.Create;
 using CandidateAssessment.Application.Phones.Update;
 using CandidateAssessment.Domain.Enums;
 using CandidateAssessment.UnitTests.Fakes;
-using Xunit;
 
 namespace CandidateAssessment.UnitTests.Phones.Update;
 

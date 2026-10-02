@@ -1,11 +1,26 @@
 using CandidateAssessment.Domain.Exceptions;
 using CandidateAssessment.Domain.ValueObjects;
-using Xunit;
 
 namespace CandidateAssessment.UnitTests.ValueObjects;
 
 public class CpfTests
 {
+    [Theory]
+    [InlineData("123.456.789-09", "12345678909")]
+    [InlineData("  12345678909  ", "12345678909")]
+    [InlineData("abc123.456.789-09xyz", "12345678909")]
+    [InlineData("\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669\u0660\u0669",
+        "\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669\u0660\u0669")]
+    [InlineData("", "")]
+    [InlineData("abc", "")]
+    [InlineData("1234567890", "")]
+    [InlineData("123456789012", "")]
+    [InlineData("12345678909.9", "")]
+    public void Normalize_ShouldPreserveDigitFilteringAndLengthRules(string input, string expected)
+    {
+        Assert.Equal(expected, Cpf.Normalize(input));
+    }
+
     [Theory]
     [InlineData("123.456.789-09", "12345678909")]
     [InlineData("12345678909", "12345678909")]

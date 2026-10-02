@@ -1,6 +1,4 @@
 using CandidateAssessment.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace CandidateAssessment.Api.Extensions;
 
@@ -8,7 +6,7 @@ internal static class HealthChecksExtensions
 {
     // Hoisted to a static readonly array so the health-check registration does
     // not allocate a new tag array on every host start (CA1861).
-    private static readonly string[] DatabaseHealthTags = { "ready", "db" };
+    private static readonly string[] _databaseHealthTags = ["ready", "db"];
 
     /// <summary>
     /// Registers liveness and readiness checks. The readiness probe verifies
@@ -21,7 +19,7 @@ internal static class HealthChecksExtensions
             .AddDbContextCheck<ApplicationDbContext>(
                 name: "database",
                 failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
-                tags: DatabaseHealthTags);
+                tags: _databaseHealthTags);
 
         return services;
     }

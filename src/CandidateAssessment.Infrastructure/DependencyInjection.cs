@@ -7,7 +7,6 @@ using CandidateAssessment.Infrastructure.Caching;
 using CandidateAssessment.Infrastructure.Persistence;
 using CandidateAssessment.Infrastructure.Persistence.Repositories;
 using CandidateAssessment.Infrastructure.Time;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

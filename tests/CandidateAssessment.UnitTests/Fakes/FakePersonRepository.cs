@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Domain.Entities;
+using CandidateAssessment.Domain.ValueObjects;
 
 namespace CandidateAssessment.UnitTests.Fakes;
 
@@ -54,14 +55,14 @@ internal sealed class FakePersonRepository : IPersonRepository
 
         if (!string.IsNullOrWhiteSpace(cpfEquals))
         {
-            var digits = ExtractDigits(cpfEquals);
-            if (digits.Length == 11)
+            var digits = Cpf.Normalize(cpfEquals);
+            if (digits.Length == Cpf.Length)
             {
                 query = query.Where(p => p.Cpf == digits);
             }
             else
             {
-                query = Array.Empty<Person>();
+                query = [];
             }
         }
 
@@ -71,7 +72,7 @@ internal sealed class FakePersonRepository : IPersonRepository
             .ToList();
 
         var skip = Math.Max(0, (page - 1) * pageSize);
-        return Task.FromResult<IReadOnlyList<Person>>(ordered.Skip(skip).Take(pageSize).ToList());
+        return Task.FromResult<IReadOnlyList<Person>>([.. ordered.Skip(skip).Take(pageSize)]);
     }
 
     public Task<int> CountSearchAsync(
@@ -89,14 +90,14 @@ internal sealed class FakePersonRepository : IPersonRepository
 
         if (!string.IsNullOrWhiteSpace(cpfEquals))
         {
-            var digits = ExtractDigits(cpfEquals);
-            if (digits.Length == 11)
+            var digits = Cpf.Normalize(cpfEquals);
+            if (digits.Length == Cpf.Length)
             {
                 query = query.Where(p => p.Cpf == digits);
             }
             else
             {
-                query = Array.Empty<Person>();
+                query = [];
             }
         }
 
@@ -115,7 +116,7 @@ internal sealed class FakePersonRepository : IPersonRepository
             .ToList();
 
         var skip = Math.Max(0, (page - 1) * pageSize);
-        return Task.FromResult<IReadOnlyList<Person>>(deleted.Skip(skip).Take(pageSize).ToList());
+        return Task.FromResult<IReadOnlyList<Person>>([.. deleted.Skip(skip).Take(pageSize)]);
     }
 
     public Task<int> CountDeletedAsync(CancellationToken cancellationToken = default)
@@ -137,25 +138,4 @@ internal sealed class FakePersonRepository : IPersonRepository
     /// </summary>
     public IEnumerable<Phone> AllPhones()
         => _byId.Values.SelectMany(p => p.Phones);
-
-    private static string ExtractDigits(string input)
-    {
-        Span<char> buffer = stackalloc char[11];
-        var index = 0;
-
-        foreach (var ch in input)
-        {
-            if (char.IsDigit(ch))
-            {
-                if (index >= buffer.Length)
-                {
-                    return string.Empty;
-                }
-
-                buffer[index++] = ch;
-            }
-        }
-
-        return new string(buffer[..index]);
-    }
 }

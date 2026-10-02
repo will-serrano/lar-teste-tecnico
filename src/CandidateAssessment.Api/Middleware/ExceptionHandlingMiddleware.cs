@@ -108,13 +108,13 @@ public sealed class ExceptionHandlingMiddleware
         var hasUnauthorized = exception.Errors.Any(e =>
             string.Equals(e.Code, "InvalidCredentials", StringComparison.Ordinal));
 
-        var statusCode = hasUnauthorized
-            ? StatusCodes.Status401Unauthorized
-            : hasNotFound
-                ? StatusCodes.Status404NotFound
-                : hasConflict
-                    ? StatusCodes.Status409Conflict
-                    : StatusCodes.Status400BadRequest;
+        var statusCode = (hasUnauthorized, hasNotFound, hasConflict) switch
+        {
+            (true, _, _) => StatusCodes.Status401Unauthorized,
+            (_, true, _) => StatusCodes.Status404NotFound,
+            (_, _, true) => StatusCodes.Status409Conflict,
+            _ => StatusCodes.Status400BadRequest,
+        };
 
         var type = statusCode switch
         {

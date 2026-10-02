@@ -34,14 +34,9 @@ public sealed class UpdatePhoneHandler
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var person = await _personRepository.GetByIdAsync(command.PersonId, cancellationToken);
-        if (person is null)
-        {
-            throw new ApplicationValidationException(
+        var person = await _personRepository.GetByIdAsync(command.PersonId, cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
                 $"Person with id '{command.PersonId}' was not found.");
-        }
-
         var phone = await _phoneRepository.GetByIdAsync(command.PhoneId, cancellationToken);
         if (phone is null || phone.PersonId != command.PersonId)
         {

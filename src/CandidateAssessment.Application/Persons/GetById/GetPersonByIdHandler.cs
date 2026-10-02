@@ -44,14 +44,9 @@ public sealed class GetPersonByIdHandler
 
         _logger.LogDebug("Person cache MISS for {PersonId}", query.Id);
 
-        var person = await _personRepository.GetByIdAsync(query.Id, cancellationToken);
-        if (person is null)
-        {
-            throw new ApplicationValidationException(
+        var person = await _personRepository.GetByIdAsync(query.Id, cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
                 $"Person with id '{query.Id}' was not found.");
-        }
-
         var entry = CachedPerson.From(person);
         await _cache.SetAsync(
             cacheKey,
@@ -89,7 +84,7 @@ public sealed class CachedPerson
 
     public DateTime? RestoredAtUtc { get; init; }
 
-    public IReadOnlyList<CachedPhone> Phones { get; init; } = Array.Empty<CachedPhone>();
+    public IReadOnlyList<CachedPhone> Phones { get; init; } = [];
 
     public static CachedPerson From(Person person)
     {
@@ -106,7 +101,7 @@ public sealed class CachedPerson
             UpdatedAtUtc = person.UpdatedAtUtc,
             DeletedAtUtc = person.DeletedAtUtc,
             RestoredAtUtc = person.RestoredAtUtc,
-            Phones = person.Phones.Select(CachedPhone.From).ToArray(),
+            Phones = [.. person.Phones.Select(CachedPhone.From)],
         };
     }
 }

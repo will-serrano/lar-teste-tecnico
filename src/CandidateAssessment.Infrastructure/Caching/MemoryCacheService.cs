@@ -24,7 +24,7 @@ public sealed class MemoryCacheService : ICacheService
         ArgumentNullException.ThrowIfNull(key);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var value = _cache.TryGetValue(key, out var entry) ? entry as T : null;
+        var value = _cache.TryGetValue(key, out object? entry) ? entry as T : null;
 
         return Task.FromResult(value);
     }

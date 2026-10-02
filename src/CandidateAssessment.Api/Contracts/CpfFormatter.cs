@@ -9,7 +9,7 @@ internal static class CpfFormatter
 {
     public static string Format(string cpf)
     {
-        if (Cpf.TryCreate(cpf, out var parsed))
+        if (Cpf.TryCreate(cpf, out Cpf? parsed))
         {
             return parsed.Format();
         }

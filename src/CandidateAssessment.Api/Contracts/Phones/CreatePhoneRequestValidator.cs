@@ -1,33 +1,31 @@
-using CandidateAssessment.Domain.ValueObjects;
 using FluentValidation;
 
-namespace CandidateAssessment.Application.Phones.Create;
+namespace CandidateAssessment.Api.Contracts.Phones;
 
-public sealed class CreatePhoneValidator : AbstractValidator<CreatePhoneCommand>
+internal sealed class CreatePhoneRequestValidator : AbstractValidator<CreatePhoneRequest>
 {
-    public CreatePhoneValidator()
+    public CreatePhoneRequestValidator()
     {
-        RuleFor(c => c.PersonId)
-            .NotEqual(Guid.Empty)
-            .WithMessage("PersonId is required.");
-
-        RuleFor(c => c.Type)
+        RuleFor(r => r.Type)
             .IsInEnum()
             .WithMessage("PhoneType must be a valid value.");
 
-        RuleFor(c => c.Number)
+        RuleFor(r => r.Number)
             .NotEmpty()
             .WithMessage("Number is required.")
-            .Must(BeDigitsOrFormatted)
+            .Must(HaveOnlyAllowedCharacters)
             .WithMessage("Number must contain only digits, spaces, '(', ')', '+', or '-'.");
 
-        RuleFor(c => c)
-            .Must(c => PhoneNumber.TryCreate(c.Number, c.Type, out _))
-            .WithMessage(c => $"Number is not valid for type {c.Type}.")
-            .When(c => c.Type != 0);
+        RuleFor(r => r)
+            .Must(r => CandidateAssessment.Domain.ValueObjects.PhoneNumber.TryCreate(
+                r.Number,
+                r.Type,
+                out _))
+            .WithMessage(r => $"Number is not valid for type {r.Type}.")
+            .When(r => r.Type != 0);
     }
 
-    private static bool BeDigitsOrFormatted(string? number)
+    private static bool HaveOnlyAllowedCharacters(string? number)
     {
         if (string.IsNullOrWhiteSpace(number))
         {

@@ -2,8 +2,10 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using CandidateAssessment.Api.Serialization;
+using CandidateAssessment.Application.Abstractions.Persistence;
+using CandidateAssessment.Domain.ValueObjects;
 using CandidateAssessment.IntegrationTests.Infrastructure;
-using Xunit;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CandidateAssessment.IntegrationTests;
 
@@ -29,6 +31,38 @@ public class InfrastructureTests
     {
         _factory = factory;
         _factory.EnsureDatabaseCreated();
+    }
+
+    [Fact]
+    public async Task PersonRepository_ShouldNormalizeCpf_AndRejectInvalidLengths()
+    {
+        var client = await _factory.CreateAuthenticatedAdminClientAsync();
+        var cpf = UniqueCpf();
+        var response = await client.PostAsJsonAsync("/api/v1/persons", new
+        {
+            name = "Repository Search Person",
+            cpf,
+            birthDate = "1990-01-01",
+        });
+        response.EnsureSuccessStatusCode();
+        var created = Assert.IsType<PersonResponse>(
+            await response.Content.ReadFromJsonAsync<PersonResponse>(JsonOptions));
+
+        using var scope = _factory.Services.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IPersonRepository>();
+
+        var formattedCpf = Cpf.Create(cpf).Format();
+        var matches = await repository.SearchAsync(null, formattedCpf, 1, 10);
+
+        Assert.Equal(created.Id, Assert.Single(matches).Id);
+        Assert.Equal(1, await repository.CountSearchAsync(null, formattedCpf));
+
+        string[] invalidCpfs = [cpf[..^1], cpf + "9", formattedCpf + ".9", "abc"];
+        foreach (var invalidCpf in invalidCpfs)
+        {
+            Assert.Empty(await repository.SearchAsync(null, invalidCpf, 1, 10));
+            Assert.Equal(0, await repository.CountSearchAsync(null, invalidCpf));
+        }
     }
 
     [Fact]
@@ -180,7 +214,7 @@ public class InfrastructureTests
     private static string UniqueCpf()
     {
         var hex = Guid.NewGuid().ToString("N");
-        Span<char> digits = stackalloc char[11];
+        var digits = new char[11];
 
         for (var i = 0; i < 11; i++)
         {
@@ -190,7 +224,7 @@ public class InfrastructureTests
             digits[i] = (char)('0' + (n % 10));
         }
 
-        int[] weights1 = { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+        int[] weights1 = [10, 9, 8, 7, 6, 5, 4, 3, 2];
         var sum1 = 0;
         for (var i = 0; i < 9; i++)
         {
@@ -200,7 +234,7 @@ public class InfrastructureTests
         var remainder1 = sum1 % 11;
         digits[9] = (char)('0' + (remainder1 < 2 ? 0 : 11 - remainder1));
 
-        int[] weights2 = { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+        int[] weights2 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
         var sum2 = 0;
         for (var i = 0; i < 10; i++)
         {

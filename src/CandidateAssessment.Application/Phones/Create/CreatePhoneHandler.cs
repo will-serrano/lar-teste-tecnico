@@ -34,14 +34,9 @@ public sealed class CreatePhoneHandler
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var person = await _personRepository.GetByIdAsync(command.PersonId, cancellationToken);
-        if (person is null)
-        {
-            throw new ApplicationValidationException(
+        var person = await _personRepository.GetByIdAsync(command.PersonId, cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
                 $"Person with id '{command.PersonId}' was not found.");
-        }
-
         var phoneNumber = PhoneNumber.Create(command.Number, command.Type);
 
         if (await _phoneRepository.ExistsForPersonAsync(

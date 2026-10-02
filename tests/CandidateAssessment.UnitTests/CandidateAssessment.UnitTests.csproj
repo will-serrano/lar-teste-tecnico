@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\CandidateAssessment.Api\CandidateAssessment.Api.csproj" />
     <ProjectReference Include="..\..\src\CandidateAssessment.Domain\CandidateAssessment.Domain.csproj" />
     <ProjectReference Include="..\..\src\CandidateAssessment.Application\CandidateAssessment.Application.csproj" />
   </ItemGroup>

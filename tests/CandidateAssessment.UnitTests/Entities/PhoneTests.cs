@@ -1,7 +1,6 @@
 using CandidateAssessment.Domain.Entities;
 using CandidateAssessment.Domain.Enums;
 using CandidateAssessment.Domain.ValueObjects;
-using Xunit;
 
 namespace CandidateAssessment.UnitTests.Entities;
 

@@ -1,12 +1,25 @@
 using CandidateAssessment.Domain.Enums;
 using CandidateAssessment.Domain.Exceptions;
 using CandidateAssessment.Domain.ValueObjects;
-using Xunit;
 
 namespace CandidateAssessment.UnitTests.ValueObjects;
 
 public class PhoneNumberTests
 {
+    [Theory]
+    [InlineData("(13) 99999-9999", "13999999999")]
+    [InlineData("(11) 3333-4444", "1133334444")]
+    [InlineData("abc123xyz", "123")]
+    [InlineData("\u0661\u0662\u0663", "\u0661\u0662\u0663")]
+    [InlineData("", "")]
+    [InlineData("abc", "")]
+    [InlineData("139999999999", "")]
+    [InlineData("13999999999.9", "")]
+    public void Normalize_ShouldPreserveDigitFilteringAndLengthRules(string input, string expected)
+    {
+        Assert.Equal(expected, PhoneNumber.Normalize(input));
+    }
+
     [Theory]
     [InlineData("(13) 99999-9999", PhoneType.Mobile, "13999999999")]
     [InlineData("13999999999", PhoneType.Mobile, "13999999999")]

@@ -6,7 +6,7 @@ namespace CandidateAssessment.Api.Contracts;
 /// </summary>
 public sealed class PagedResponse<T>
 {
-    public IReadOnlyList<T> Items { get; init; } = Array.Empty<T>();
+    public IReadOnlyList<T> Items { get; init; } = [];
 
     public int Page { get; init; }
 

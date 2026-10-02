@@ -3,7 +3,6 @@ using CandidateAssessment.Application.Persons.Restore;
 using CandidateAssessment.Domain.Entities;
 using CandidateAssessment.Domain.ValueObjects;
 using CandidateAssessment.UnitTests.Fakes;
-using Xunit;
 
 namespace CandidateAssessment.UnitTests.Persons.Restore;
 

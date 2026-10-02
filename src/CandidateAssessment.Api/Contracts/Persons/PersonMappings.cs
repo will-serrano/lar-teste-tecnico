@@ -11,55 +11,37 @@ internal static class PersonMappings
     {
         ArgumentNullException.ThrowIfNull(person);
 
-        return ToResponseFromCore(
-            person.Id,
-            person.Name,
-            person.Cpf,
-            person.BirthDate,
-            person.IsActive,
-            person.CreatedAtUtc,
-            person.UpdatedAtUtc,
-            person.DeletedAtUtc,
-            person.RestoredAtUtc);
+        return new PersonResponse
+        {
+            Id = person.Id,
+            Name = person.Name,
+            Cpf = Cpf.Create(person.Cpf).Format(),
+            BirthDate = person.BirthDate,
+            IsActive = person.IsActive,
+            CreatedAtUtc = person.CreatedAtUtc,
+            UpdatedAtUtc = person.UpdatedAtUtc,
+            DeletedAtUtc = person.DeletedAtUtc,
+            RestoredAtUtc = person.RestoredAtUtc,
+        };
     }
 
     public static PersonResponse ToResponse(this CachedPerson cached)
     {
         ArgumentNullException.ThrowIfNull(cached);
 
-        return ToResponseFromCore(
-            cached.Id,
-            cached.Name,
-            cached.Cpf,
-            cached.BirthDate,
-            cached.IsActive,
-            cached.CreatedAtUtc,
-            cached.UpdatedAtUtc,
-            cached.DeletedAtUtc,
-            cached.RestoredAtUtc);
-    }
-
-    private static PersonResponse ToResponseFromCore(
-        Guid id,
-        string name,
-        string cpf,
-        DateOnly birthDate,
-        bool isActive,
-        DateTime createdAtUtc,
-        DateTime updatedAtUtc,
-        DateTime? deletedAtUtc,
-        DateTime? restoredAtUtc) => new()
+        return new PersonResponse
         {
-            Id = id,
-            Name = name,
-            Cpf = Cpf.Create(cpf).Format(),
-            BirthDate = birthDate,
-            IsActive = isActive,
-            CreatedAtUtc = createdAtUtc,
-            UpdatedAtUtc = updatedAtUtc,
-            DeletedAtUtc = deletedAtUtc,
-            RestoredAtUtc = restoredAtUtc,
+            Id = cached.Id,
+            Name = cached.Name,
+            Cpf = Cpf.Create(cached.Cpf).Format(),
+            BirthDate = cached.BirthDate,
+            IsActive = cached.IsActive,
+            CreatedAtUtc = cached.CreatedAtUtc,
+            UpdatedAtUtc = cached.UpdatedAtUtc,
+            DeletedAtUtc = cached.DeletedAtUtc,
+            RestoredAtUtc = cached.RestoredAtUtc,
         };
+    }
 
     public static PagedResponse<PersonResponse> ToResponse<TDomain>(
         this PagedResult<TDomain> result,
@@ -71,7 +53,7 @@ internal static class PersonMappings
 
         return new PagedResponse<PersonResponse>
         {
-            Items = result.Items.Select(map).ToList(),
+            Items = [.. result.Items.Select(map)],
             Page = result.Page,
             PageSize = result.PageSize,
             TotalItems = result.TotalItems,

@@ -32,14 +32,9 @@ public sealed class RestorePersonHandler
 
         var person = await _personRepository.GetByIdIncludingDeletedAsync(
             command.Id,
-            cancellationToken);
-        if (person is null)
-        {
-            throw new ApplicationValidationException(
+            cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
                 $"Person with id '{command.Id}' was not found.");
-        }
-
         var nowUtc = _dateTimeProvider.UtcNow;
         person.Restore(nowUtc);
 

@@ -8,5 +8,5 @@ public sealed class LoginResponse
 
     public string Username { get; init; } = default!;
 
-    public IReadOnlyList<string> Roles { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> Roles { get; init; } = [];
 }

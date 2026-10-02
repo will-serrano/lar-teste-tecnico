@@ -55,7 +55,7 @@ CandidateAssessment/
 │   ├── CandidateAssessment.Infrastructure   # EF Core, Identity, cache, time
 │   └── CandidateAssessment.Api              # controllers, middleware, configuration
 ├── tests/
-│   ├── CandidateAssessment.UnitTests        # Domain + Application (fakes)
+│   ├── CandidateAssessment.UnitTests        # Domain + Application (fakes) + mapeamentos da API
 │   └── CandidateAssessment.IntegrationTests # HTTP → EF → SQLite (WebApplicationFactory)
 ├── coverlet.runsettings             # cobertura consolidada para CI
 ├── Directory.Build.props            # analyzers centralizados
@@ -98,6 +98,10 @@ Veja [`docs/adr/001-clean-architecture.md`](./docs/adr/001-clean-architecture.md
 6. **Cache atrás de `ICacheService`** — `MemoryCacheService` é a única
    implementação hoje; trocar para Redis é uma substituição da
    `Infrastructure` sem tocar `Application`.
+7. **Normalização prioriza legibilidade** — nomes usam `Split`/`string.Join`
+   para remover espaços nas extremidades e unificar whitespace interno.
+   CPF e telefone usam LINQ para extrair dígitos, mantendo os limites de
+   comprimento; a busca por CPF reutiliza `Cpf.Normalize`.
 
 ## Como executar
 
@@ -290,8 +294,13 @@ dotnet test CandidateAssessment.sln
 
 | Projeto | Quantidade | Tipo |
 |---|---:|---|
-| `CandidateAssessment.UnitTests` | 122 | Domain + Application (fakes) |
+| `CandidateAssessment.UnitTests` | 135 | Domain + Application (fakes) + mapeamentos da API |
 | `CandidateAssessment.IntegrationTests` | 38 | HTTP → EF → SQLite (WebApplicationFactory) |
+
+Os testes unitários dos mapeamentos de pessoas verificam todos os campos da
+resposta para entidades e snapshots de cache, incluindo exclusão, restauração,
+paginação e validação de entradas. Os testes HTTP verificam a consistência das
+respostas de criação, consulta, listagem e restauração.
 
 Os testes de integração sobem a aplicação real em memória de processo e
 apontam para um SQLite temporário. O `[Collection]`-based fan-out evita

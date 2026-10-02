@@ -31,7 +31,7 @@ public sealed class Person
 
     public DateTime? RestoredAtUtc { get; private set; }
 
-    private readonly List<Phone> _phones = new();
+    private readonly List<Phone> _phones = [];
 
     public IReadOnlyCollection<Phone> Phones => _phones.AsReadOnly();
 
@@ -95,12 +95,7 @@ public sealed class Person
             throw new DomainException("Cannot update a phone of an inactive person.");
         }
 
-        var phone = _phones.Find(p => p.Id == phoneId);
-        if (phone is null)
-        {
-            throw new DomainException("Phone not found for this person.");
-        }
-
+        var phone = _phones.Find(p => p.Id == phoneId) ?? throw new DomainException("Phone not found for this person.");
         phone.Update(type, number, nowUtc);
         UpdatedAtUtc = nowUtc;
         return phone;
@@ -108,12 +103,7 @@ public sealed class Person
 
     public void RemovePhone(Guid phoneId, DateTime nowUtc)
     {
-        var phone = _phones.Find(p => p.Id == phoneId);
-        if (phone is null)
-        {
-            throw new DomainException("Phone not found for this person.");
-        }
-
+        var phone = _phones.Find(p => p.Id == phoneId) ?? throw new DomainException("Phone not found for this person.");
         _phones.Remove(phone);
         UpdatedAtUtc = nowUtc;
     }
@@ -149,8 +139,7 @@ public sealed class Person
             throw new DomainException("Name is required.");
         }
 
-        var trimmed = name.Trim();
-        var normalized = CollapseInternalSpaces(trimmed);
+        var normalized = CollapseInternalSpaces(name);
 
         if (normalized.Length > MaxNameLength)
         {
@@ -161,39 +150,11 @@ public sealed class Person
     }
 
     /// <summary>
-    /// Collapses consecutive whitespace characters into a single space.
+    /// Trims and collapses whitespace characters into a single space.
     /// E.g. "João   da   Silva" becomes "João da Silva".
     /// </summary>
     private static string CollapseInternalSpaces(string input)
-    {
-        var length = input.Length;
-        Span<char> buffer = length <= 256
-            ? stackalloc char[length]
-            : new char[length];
-
-        var writeIndex = 0;
-        var previousWasSpace = false;
-
-        for (var i = 0; i < length; i++)
-        {
-            var ch = input[i];
-            if (char.IsWhiteSpace(ch))
-            {
-                if (!previousWasSpace)
-                {
-                    buffer[writeIndex++] = ' ';
-                    previousWasSpace = true;
-                }
-            }
-            else
-            {
-                buffer[writeIndex++] = ch;
-                previousWasSpace = false;
-            }
-        }
-
-        return writeIndex == length ? input : new string(buffer[..writeIndex]);
-    }
+        => string.Join(" ", input.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     private static void ValidateBirthDate(DateOnly birthDate, DateTime nowUtc)
     {

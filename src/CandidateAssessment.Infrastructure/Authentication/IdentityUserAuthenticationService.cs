@@ -54,10 +54,10 @@ public sealed class IdentityUserAuthenticationService : IUserAuthenticationServi
         var identityUser = await _userManager.FindByIdAsync(user.Id);
         if (identityUser is null)
         {
-            return Array.Empty<string>();
+            return [];
         }
 
         var roles = await _userManager.GetRolesAsync(identityUser);
-        return roles.ToList();
+        return [.. roles];
     }
 }

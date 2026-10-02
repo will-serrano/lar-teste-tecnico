@@ -8,15 +8,10 @@ using CandidateAssessment.Api.Contracts.Phones;
 using CandidateAssessment.Api.Extensions;
 using CandidateAssessment.Api.Serialization;
 using CandidateAssessment.Application.Abstractions.Authentication;
-using CandidateAssessment.Application.Phones.Create;
-using CandidateAssessment.Application.Phones.Update;
 using CandidateAssessment.Domain.Roles;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -169,133 +164,5 @@ public static class DependencyInjection
             options.AddPolicy(AuthorizationPolicies.CanViewDeletedPersons, policy =>
                 policy.RequireRole(ApplicationRoles.Admin));
         });
-    }
-}
-
-internal sealed class CreatePersonRequestValidator : AbstractValidator<CreatePersonRequest>
-{
-    public CreatePersonRequestValidator()
-    {
-        RuleFor(r => r.Name)
-            .NotEmpty()
-            .WithMessage("Name is required.")
-            .MaximumLength(100)
-            .WithMessage("Name cannot exceed 100 characters.");
-
-        RuleFor(r => r.Cpf)
-            .NotEmpty()
-            .WithMessage("Cpf is required.")
-            .Must(HaveAtLeast11Digits)
-            .WithMessage("Cpf must contain 11 digits.");
-
-        RuleFor(r => r.BirthDate)
-            .NotEqual(default(DateOnly))
-            .WithMessage("BirthDate is required.");
-    }
-
-    private static bool HaveAtLeast11Digits(string? cpf)
-    {
-        if (string.IsNullOrWhiteSpace(cpf))
-        {
-            return false;
-        }
-
-        var digitCount = 0;
-        foreach (var ch in cpf)
-        {
-            if (char.IsDigit(ch))
-            {
-                digitCount++;
-            }
-        }
-
-        return digitCount == 11;
-    }
-}
-
-internal sealed class UpdatePersonRequestValidator : AbstractValidator<UpdatePersonRequest>
-{
-    public UpdatePersonRequestValidator()
-    {
-        RuleFor(r => r.Name)
-            .NotEmpty()
-            .WithMessage("Name is required.")
-            .MaximumLength(100)
-            .WithMessage("Name cannot exceed 100 characters.");
-
-        RuleFor(r => r.BirthDate)
-            .NotEqual(default(DateOnly))
-            .WithMessage("BirthDate is required.");
-    }
-}
-
-internal sealed class CreatePhoneRequestValidator : AbstractValidator<CreatePhoneRequest>
-{
-    public CreatePhoneRequestValidator()
-    {
-        RuleFor(r => r.Type)
-            .IsInEnum()
-            .WithMessage("PhoneType must be a valid value.");
-
-        RuleFor(r => r.Number)
-            .NotEmpty()
-            .WithMessage("Number is required.")
-            .Must(HaveOnlyAllowedCharacters)
-            .WithMessage("Number must contain only digits, spaces, '(', ')', '+', or '-'.");
-
-        RuleFor(r => r)
-            .Must(r => CandidateAssessment.Domain.ValueObjects.PhoneNumber.TryCreate(
-                r.Number,
-                r.Type,
-                out _))
-            .WithMessage(r => $"Number is not valid for type {r.Type}.")
-            .When(r => r.Type != 0);
-    }
-
-    private static bool HaveOnlyAllowedCharacters(string? number)
-    {
-        if (string.IsNullOrWhiteSpace(number))
-        {
-            return false;
-        }
-
-        foreach (var ch in number)
-        {
-            var allowed = char.IsDigit(ch)
-                || char.IsWhiteSpace(ch)
-                || ch == '('
-                || ch == ')'
-                || ch == '+'
-                || ch == '-';
-
-            if (!allowed)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-}
-
-internal sealed class UpdatePhoneRequestValidator : AbstractValidator<UpdatePhoneRequest>
-{
-    public UpdatePhoneRequestValidator()
-    {
-        RuleFor(r => r.Type)
-            .IsInEnum()
-            .WithMessage("PhoneType must be a valid value.");
-
-        RuleFor(r => r.Number)
-            .NotEmpty()
-            .WithMessage("Number is required.");
-
-        RuleFor(r => r)
-            .Must(r => CandidateAssessment.Domain.ValueObjects.PhoneNumber.TryCreate(
-                r.Number,
-                r.Type,
-                out _))
-            .WithMessage(r => $"Number is not valid for type {r.Type}.")
-            .When(r => r.Type != 0);
     }
 }

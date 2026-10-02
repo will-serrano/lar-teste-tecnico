@@ -1,5 +1,6 @@
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Domain.Entities;
+using CandidateAssessment.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace CandidateAssessment.Infrastructure.Persistence.Repositories;
@@ -99,8 +100,8 @@ public class EfPersonRepository : IPersonRepository
 
         if (!string.IsNullOrWhiteSpace(cpfEquals))
         {
-            var digits = ExtractDigits(cpfEquals);
-            if (digits.Length == 11)
+            var digits = Cpf.Normalize(cpfEquals);
+            if (digits.Length == Cpf.Length)
             {
                 query = query.Where(p => p.Cpf == digits);
             }
@@ -113,26 +114,5 @@ public class EfPersonRepository : IPersonRepository
         }
 
         return query;
-    }
-
-    private static string ExtractDigits(string input)
-    {
-        Span<char> buffer = stackalloc char[11];
-        var index = 0;
-
-        foreach (var ch in input)
-        {
-            if (char.IsDigit(ch))
-            {
-                if (index >= buffer.Length)
-                {
-                    return string.Empty;
-                }
-
-                buffer[index++] = ch;
-            }
-        }
-
-        return new string(buffer[..index]);
     }
 }

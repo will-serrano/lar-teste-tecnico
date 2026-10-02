@@ -28,12 +28,7 @@ public sealed class LoginHandler
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var user = await _userAuthentication.FindByNameAsync(command.Username, cancellationToken);
-        if (user is null)
-        {
-            throw InvalidCredentials();
-        }
-
+        var user = await _userAuthentication.FindByNameAsync(command.Username, cancellationToken) ?? throw InvalidCredentials();
         var passwordValid = await _userAuthentication.CheckPasswordAsync(
             user,
             command.Password,

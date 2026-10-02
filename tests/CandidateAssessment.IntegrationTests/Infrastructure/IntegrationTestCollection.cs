@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace CandidateAssessment.IntegrationTests.Infrastructure;
 
 /// <summary>

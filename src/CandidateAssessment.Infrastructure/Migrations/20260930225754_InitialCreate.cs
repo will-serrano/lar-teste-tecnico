@@ -1,4 +1,3 @@
-using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -251,7 +250,7 @@ namespace CandidateAssessment.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Phones_PersonId_Number",
                 table: "Phones",
-                columns: new[] { "PersonId", "Number" },
+                columns: ["PersonId", "Number"],
                 unique: true);
         }
 

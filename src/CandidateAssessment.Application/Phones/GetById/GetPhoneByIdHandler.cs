@@ -22,15 +22,9 @@ public sealed class GetPhoneByIdHandler
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);
-
-        var person = await _personRepository.GetByIdAsync(query.PersonId, cancellationToken);
-        if (person is null)
-        {
-            throw new ApplicationValidationException(
+        _ = await _personRepository.GetByIdAsync(query.PersonId, cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
                 $"Person with id '{query.PersonId}' was not found.");
-        }
-
         var phone = await _phoneRepository.GetByIdAsync(query.PhoneId, cancellationToken);
         if (phone is null || phone.PersonId != query.PersonId)
         {

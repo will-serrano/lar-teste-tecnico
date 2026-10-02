@@ -1,5 +1,3 @@
-using CandidateAssessment.Application.Abstractions.Caching;
-
 namespace CandidateAssessment.UnitTests.Fakes;
 
 /// <summary>

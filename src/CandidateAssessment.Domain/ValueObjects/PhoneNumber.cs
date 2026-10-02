@@ -18,7 +18,7 @@ public sealed record class PhoneNumber
 
     public static PhoneNumber Create(string? input, PhoneType type)
     {
-        if (!TryCreate(input, type, out var phone))
+        if (!TryCreate(input, type, out PhoneNumber? phone))
         {
             throw new DomainException($"Invalid phone number for type {type}.");
         }
@@ -48,23 +48,8 @@ public sealed record class PhoneNumber
 
     public static string Normalize(string input)
     {
-        Span<char> buffer = stackalloc char[11];
-        var index = 0;
-
-        foreach (var ch in input)
-        {
-            if (char.IsDigit(ch))
-            {
-                if (index >= buffer.Length)
-                {
-                    return string.Empty;
-                }
-
-                buffer[index++] = ch;
-            }
-        }
-
-        return new string(buffer[..index]);
+        var digits = new string(input.Where(char.IsDigit).ToArray());
+        return digits.Length <= 11 ? digits : string.Empty;
     }
 
     private static bool IsLengthAllowed(PhoneType type, int length)

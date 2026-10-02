@@ -1,10 +1,8 @@
 using System.Data.Common;
 using System.Net.Http.Json;
-using CandidateAssessment.Domain.Roles;
 using CandidateAssessment.Infrastructure.Authentication;
 using CandidateAssessment.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -141,7 +139,7 @@ public class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Pr
 
         public string Username { get; init; } = default!;
 
-        public IReadOnlyList<string> Roles { get; init; } = Array.Empty<string>();
+        public IReadOnlyList<string> Roles { get; init; } = [];
     }
 
     private static void RemoveDbContextRegistrations(IServiceCollection services)

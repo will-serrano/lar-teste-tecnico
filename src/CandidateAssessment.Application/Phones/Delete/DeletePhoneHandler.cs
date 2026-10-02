@@ -30,14 +30,9 @@ public sealed class DeletePhoneHandler
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var person = await _personRepository.GetByIdAsync(command.PersonId, cancellationToken);
-        if (person is null)
-        {
-            throw new ApplicationValidationException(
+        var person = await _personRepository.GetByIdAsync(command.PersonId, cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
                 $"Person with id '{command.PersonId}' was not found.");
-        }
-
         if (person.Phones.All(p => p.Id != command.PhoneId))
         {
             throw new ApplicationValidationException(
