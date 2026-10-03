@@ -3,6 +3,9 @@
 *.md
 !/README.md
 
+# Evidências de teste locais
+/test-evidence/
+
 ## Ignora arquivos temporários do Visual Studio, resultados de compilação e
 ## arquivos gerados por extensões populares do Visual Studio.
 ##
