@@ -3,8 +3,8 @@ using CandidateAssessment.Domain.Enums;
 namespace CandidateAssessment.Application.Phones.Create;
 
 /// <summary>
-/// Command to attach a new phone to an existing person.
-/// Number is accepted formatted or digits-only; the value object normalizes it.
+/// Comando para adicionar um telefone a uma pessoa existente.
+/// O número é aceito formatado ou apenas com dígitos; o objeto de valor o normaliza.
 /// </summary>
 public sealed record CreatePhoneCommand(
     Guid PersonId,

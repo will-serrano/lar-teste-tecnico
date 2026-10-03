@@ -1,7 +1,7 @@
 namespace CandidateAssessment.Domain.Exceptions;
 
 /// <summary>
-/// Exception thrown when a domain invariant is violated.
+/// Exceção lançada quando uma invariável do domínio é violada.
 /// </summary>
 public class DomainException : Exception
 {

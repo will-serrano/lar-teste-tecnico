@@ -3,12 +3,12 @@ using System.Security.Claims;
 namespace CandidateAssessment.Application.Abstractions.Authentication;
 
 /// <summary>
-/// Issues short-lived JWT access tokens for authenticated users.
+/// Emite tokens de acesso JWT de curta duração para usuários autenticados.
 /// </summary>
 public interface ITokenService
 {
     /// <summary>
-    /// Builds a signed access token for the supplied identity.
+    /// Cria um token de acesso assinado para a identidade informada.
     /// </summary>
     TokenDescriptor IssueToken(IEnumerable<Claim> claims);
 }

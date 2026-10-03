@@ -5,10 +5,10 @@ namespace CandidateAssessment.Api.Extensions;
 internal static class RateLimitingExtensions
 {
     /// <summary>
-    /// Wires up AspNetCoreRateLimit with an in-memory backing store and IP-based
-    /// policies configured through the <c>IpRateLimiting</c> configuration section.
-    /// Health-check endpoints are whitelisted via configuration so external probes
-    /// can hit them without consuming the request budget.
+    /// Configura AspNetCoreRateLimit com armazenamento em memória e políticas baseadas em IP,
+    /// definidas pela seção de configuração <c>IpRateLimiting</c>.
+    /// Os endpoints de verificação de integridade são permitidos pela configuração para que
+    /// verificações externas possam acessá-los sem consumir a cota de requisições.
     /// </summary>
     public static IServiceCollection AddApiRateLimiting(
         this IServiceCollection services,
@@ -32,7 +32,7 @@ internal static class RateLimitingExtensions
     }
 
     /// <summary>
-    /// Hooks the rate-limiting middleware into the request pipeline.
+    /// Adiciona o middleware de limitação de taxa ao pipeline de requisições.
     /// </summary>
     public static IApplicationBuilder UseApiRateLimiting(this IApplicationBuilder app)
     {

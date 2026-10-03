@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Identity;
 namespace CandidateAssessment.Infrastructure.Authentication;
 
 /// <summary>
-/// Identity-backed implementation of <see cref="IUserAuthenticationService"/>.
-/// Keeps Microsoft.AspNetCore.Identity types out of the Application layer.
+/// Implementação de <see cref="IUserAuthenticationService"/> baseada no Identity.
+/// Mantém os tipos de Microsoft.AspNetCore.Identity fora da camada Application.
 /// </summary>
 public sealed class IdentityUserAuthenticationService : IUserAuthenticationService
 {

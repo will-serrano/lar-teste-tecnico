@@ -1,8 +1,8 @@
 namespace CandidateAssessment.Domain.Roles;
 
 /// <summary>
-/// Centralized role names used by the application. Kept in the Domain because
-/// they are part of the business identity of the system, not a transport concern.
+/// Nomes de papéis usados pela aplicação, centralizados. Mantidos no Domain porque
+/// fazem parte da identidade de negócio do sistema, não da camada de transporte.
 /// </summary>
 public static class ApplicationRoles
 {

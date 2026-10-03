@@ -3,8 +3,8 @@ using CandidateAssessment.Domain.Exceptions;
 namespace CandidateAssessment.Domain.ValueObjects;
 
 /// <summary>
-/// Brazilian CPF (Cadastro de Pessoas Físicas) value object.
-/// Stores only digits in a normalized 11-digit form.
+/// Objeto de valor do CPF (Cadastro de Pessoas Físicas) brasileiro.
+/// Armazena somente os dígitos, normalizados em uma sequência de 11 caracteres.
 /// </summary>
 public sealed record class Cpf
 {
@@ -80,9 +80,9 @@ public sealed record class Cpf
         return true;
     }
 
-    // Weight arrays are immutable lookup tables for the CPF check-digit
-    // algorithm. Hoisting them to static readonly fields avoids allocating a
-    // fresh array on every validation (CA1861).
+    // Os arrays de pesos são tabelas imutáveis de consulta para o algoritmo de
+    // dígitos verificadores do CPF. Mantê-los em campos static readonly evita alocar
+    // um novo array a cada validação (CA1861).
     private static readonly int[] _firstCheckDigitWeights = [10, 9, 8, 7, 6, 5, 4, 3, 2];
     private static readonly int[] _secondCheckDigitWeights = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
 

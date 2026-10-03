@@ -47,8 +47,8 @@ public sealed class CreatePersonHandler
         await _personRepository.AddAsync(person, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // Defensive: a fresh id is never in cache, but invalidate to keep a single
-        // invalidation policy across all mutation paths.
+        // Medida preventiva: um ID recém-criado nunca está em cache, mas a invalidação
+        // mantém uma única política para todos os fluxos de mutação.
         await _personCache.InvalidateAsync(person.Id, cancellationToken);
 
         return person.Id;

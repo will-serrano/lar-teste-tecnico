@@ -19,7 +19,7 @@ namespace CandidateAssessment.Application;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Registers Application-layer use cases and validators.
+    /// Registra os casos de uso e validadores da camada Application.
     /// </summary>
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
@@ -48,7 +48,7 @@ public static class DependencyInjection
 }
 
 /// <summary>
-/// Marker type used for FluentValidation assembly scanning.
+/// Tipo marcador usado para localizar assemblies do FluentValidation.
 /// </summary>
 internal sealed class ApplicationAssemblyMarker
 {

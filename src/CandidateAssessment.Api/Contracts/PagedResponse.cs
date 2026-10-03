@@ -1,8 +1,8 @@
 namespace CandidateAssessment.Api.Contracts;
 
 /// <summary>
-/// Generic pagination envelope for list endpoints.
-/// Field names match the contract defined in plan.md section 21.
+/// Estrutura genérica de paginação para endpoints de listagem.
+/// Os nomes dos campos seguem o contrato definido na seção 21 de plan.md.
 /// </summary>
 public sealed class PagedResponse<T>
 {

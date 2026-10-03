@@ -1,22 +1,22 @@
 namespace CandidateAssessment.Application.Abstractions.Caching;
 
 /// <summary>
-/// Abstraction over the application's cache layer.
-/// Application use cases depend on this contract, never on <c>IMemoryCache</c>,
-/// so the backing implementation can be swapped (Memory, Redis, distributed) without
-/// touching Domain or Application.
+/// Abstração da camada de cache da aplicação.
+/// Os casos de uso da camada Application dependem deste contrato, nunca de <c>IMemoryCache</c>,
+/// permitindo substituir a implementação subjacente (memória, Redis ou distribuída) sem
+/// alterar Domain ou Application.
 /// </summary>
 public interface ICacheService
 {
     /// <summary>
-    /// Returns the cached value for <paramref name="key"/> or <c>null</c> when missing.
+    /// Retorna o valor em cache para <paramref name="key"/> ou <c>null</c> quando não existir.
     /// </summary>
     Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
         where T : class;
 
     /// <summary>
-    /// Stores <paramref name="value"/> under <paramref name="key"/> for the given duration.
-    /// A non-positive <paramref name="absoluteExpiration"/> writes without expiry.
+    /// Armazena <paramref name="value"/> com a chave <paramref name="key"/> pela duração informada.
+    /// Um <paramref name="absoluteExpiration"/> não positivo grava sem expiração.
     /// </summary>
     Task SetAsync<T>(
         string key,
@@ -26,7 +26,7 @@ public interface ICacheService
         where T : class;
 
     /// <summary>
-    /// Removes the entry for <paramref name="key"/> when present. No-op otherwise.
+    /// Remove a entrada de <paramref name="key"/> quando existir. Caso contrário, não faz nada.
     /// </summary>
     Task RemoveAsync(string key, CancellationToken cancellationToken = default);
 }

@@ -90,12 +90,12 @@ public class CreatePersonHandlerTests
     [Fact]
     public async Task Should_StampAuditTimestampsFromDateProvider_OnPersist()
     {
-        // Regression: the controller used to build the PersonResponse DTO from
-        // the request, omitting CreatedAtUtc/UpdatedAtUtc. Even though the
-        // domain stamps them correctly, the API was returning zeros. This test
-        // locks down that the persisted entity carries the real timestamps
-        // supplied by IDateTimeProvider, so a future handler that exposes the
-        // entity (or maps it directly) cannot regress silently.
+        // Regressão: o controller criava o DTO PersonResponse a partir da requisição,
+        // omitindo CreatedAtUtc/UpdatedAtUtc. Embora o domínio os preenchesse corretamente,
+        // a API retornava valores zerados. Este teste garante que a entidade persistida
+        // contenha os timestamps reais fornecidos por IDateTimeProvider, evitando que
+        // uma alteração futura no handler que exponha a entidade (ou a mapeie diretamente)
+        // reintroduza esse problema sem ser percebida.
         var repo = new FakePersonRepository();
         var uow = new FakeUnitOfWork();
         var clock = new FixedDateTimeProvider(FixedNow);

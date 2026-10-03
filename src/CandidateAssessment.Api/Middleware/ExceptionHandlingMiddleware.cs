@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CandidateAssessment.Api.Middleware;
 
 /// <summary>
-/// Translates exceptions to RFC 7807 ProblemDetails.
+/// Converte exceções em ProblemDetails conforme a RFC 7807.
 /// </summary>
 public sealed class ExceptionHandlingMiddleware
 {
@@ -177,10 +177,10 @@ public sealed class ExceptionHandlingMiddleware
         DbUpdateException exception,
         string traceId)
     {
-        // SQLite reports UNIQUE constraint violations with "UNIQUE constraint failed".
-        // Other providers use similar distinguishable messages. If the inner exception
-        // matches, this is a concurrency conflict (e.g. duplicate CPF or duplicate
-        // phone number inserted simultaneously); otherwise treat as unexpected.
+        // O SQLite informa violações de restrição UNIQUE com "UNIQUE constraint failed".
+        // Outros provedores usam mensagens semelhantes e identificáveis. Se a exceção interna
+        // corresponder, trata-se de um conflito de concorrência (por exemplo, CPF ou número
+        // de telefone duplicado inserido simultaneamente); caso contrário, é inesperado.
         var isConstraintViolation = exception.InnerException is not null
             && exception.InnerException.Message.Contains(
                 "UNIQUE constraint failed",

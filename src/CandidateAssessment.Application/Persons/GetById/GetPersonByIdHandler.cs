@@ -59,10 +59,10 @@ public sealed class GetPersonByIdHandler
 }
 
 /// <summary>
-/// Cache-friendly snapshot of a <see cref="Person"/>: only the read-side fields
-/// needed to satisfy <c>GET /api/v1/persons/{id}</c>. Keeps EF Core's lazy-loaded
-/// collections out of cached entries and lets the response be projected without
-/// re-attaching to a DbContext.
+/// Projeção de <see cref="Person"/> adequada para cache: contém apenas os campos de leitura
+/// necessários para atender a <c>GET /api/v1/persons/{id}</c>. Evita incluir coleções
+/// carregadas sob demanda pelo EF Core nas entradas em cache e permite projetar a resposta
+/// sem reassociá-la a um DbContext.
 /// </summary>
 public sealed class CachedPerson
 {

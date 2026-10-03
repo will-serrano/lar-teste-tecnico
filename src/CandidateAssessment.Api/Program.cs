@@ -9,9 +9,9 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 
-// Bootstrap a minimal Serilog logger so failures during host construction are
-// also captured (and any startup errors are not silently swallowed by the
-// default ILogger pipeline).
+// Inicializa um logger Serilog mínimo para também capturar falhas durante a construção
+// do host (evitando que erros de inicialização sejam ignorados silenciosamente pelo
+// pipeline padrão de ILogger).
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Warning()
     .Enrich.FromLogContext()
@@ -22,8 +22,8 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
-    // Replace the host's default logger with the structured Serilog pipeline.
-    // Reads level/sinks configuration from the "Serilog" section.
+    // Substitui o logger padrão do host pelo pipeline estruturado do Serilog.
+    // Lê a configuração de níveis e destinos da seção "Serilog".
     builder.Host.UseSerilog((ctx, services, lc) =>
     {
         var section = ctx.Configuration.GetSection(SerilogOptions.SectionName);
@@ -77,9 +77,9 @@ try
         app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1"));
     }
 
-    // Promote ASP.NET Core's TraceIdentifier (or Activity.Id when present)
-    // into every log event's properties, so logs and ProblemDetails share the
-    // same correlation id without manual wiring.
+    // Inclui o TraceIdentifier do ASP.NET Core (ou Activity.Id, quando disponível)
+    // nas propriedades de cada evento de log, para que logs e ProblemDetails compartilhem
+    // o mesmo identificador de correlação sem configuração manual.
     app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = (diag, http) =>
         {
             var traceId = Activity.Current?.Id ?? http.TraceIdentifier;
@@ -106,7 +106,7 @@ try
     });
     app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
     {
-        // Liveness probe: confirms the process is responsive, no dependency checks.
+        // Verificação de atividade: confirma que o processo está respondendo, sem verificar dependências.
         Predicate = _ => false,
     });
 
@@ -124,7 +124,7 @@ finally
     Log.CloseAndFlush();
 }
 
-// Required for WebApplicationFactory<Program> in tests.
+// Necessário para usar WebApplicationFactory<Program> nos testes.
 public partial class Program
 {
 }

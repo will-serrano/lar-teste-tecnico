@@ -2,23 +2,23 @@ namespace CandidateAssessment.Api.Authorization;
 
 
 /// <summary>
-/// Named authorization policies. Centralizing them here keeps controllers free
-/// of role-name string literals and makes the role-to-permission mapping auditable.
+/// Políticas de autorização nomeadas. Centralizá-las aqui evita literais com nomes
+/// de papéis nos controllers e torna auditável o mapeamento entre papéis e permissões.
 /// </summary>
 public static class AuthorizationPolicies
 {
     /// <summary>
-    /// Read access to persons — both Admin and User roles.
+    /// Acesso de leitura a pessoas — papéis Admin e User.
     /// </summary>
     public const string CanReadPersons = nameof(CanReadPersons);
 
     /// <summary>
-    /// Manage access to persons (create, update, delete, restore) — Admin only.
+    /// Acesso para gerenciar pessoas (criar, atualizar, excluir, restaurar) — somente Admin.
     /// </summary>
     public const string CanManagePersons = nameof(CanManagePersons);
 
     /// <summary>
-    /// Access to the administrative endpoint listing soft-deleted persons — Admin only.
+    /// Acesso ao endpoint administrativo que lista pessoas excluídas logicamente — somente Admin.
     /// </summary>
     public const string CanViewDeletedPersons = nameof(CanViewDeletedPersons);
 }

@@ -370,10 +370,10 @@ integralmente.
 ## Estrutura do projeto
 
 ```text
-src/CandidateAssessment.Domain/        # Person, Phone, Cpf, PhoneNumber, PhoneType, DomainException
-src/CandidateAssessment.Application/   # Persons/Create, Persons/Search, ..., Phones/*, Authentication/Login
+src/CandidateAssessment.Domain/        # Entidades Person, Phone, Cpf, PhoneNumber, PhoneType e DomainException
+src/CandidateAssessment.Application/   # Casos Persons/Create, Persons/Search, ..., Phones/*, Authentication/Login
 src/CandidateAssessment.Infrastructure/ # EF Core (DbContext, Configurations, Repositories, Migrations),
-                                       #   Authentication (Identity seeder), Caching, Time
+                                       #   Authentication (semeador do Identity), Caching, Time
 src/CandidateAssessment.Api/           # Controllers, Middleware (Exception, IdentitySeed),
                                        #   Extensions (ApiVersioning, RateLimiting, HealthChecks),
                                        #   Configuration, Authentication, Authorization

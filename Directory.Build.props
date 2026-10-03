@@ -1,24 +1,24 @@
 <Project>
 
   <!--
-    Centralized MSBuild properties applied to every project in the solution.
+    Propriedades centralizadas do MSBuild aplicadas a todos os projetos da solução.
 
-    The plan deliberately keeps TreatWarningsAsErrors off so warnings remain
-    guidance rather than build failures. NETSDK1138 is suppressed because the
-    assessment requires net6.0 even though it is end-of-life. The .NET SDK
-    ships NetAnalyzers (enabled here) so no explicit package reference is
-    needed; pinning via EnableNETAnalyzers + AnalysisMode keeps behaviour
-    consistent across SDK versions used in local and CI.
+    O plano mantém TreatWarningsAsErrors desativado intencionalmente para que os avisos
+    sirvam de orientação, em vez de interromper a compilação. NETSDK1138 é suprimido
+    porque a avaliação exige net6.0, embora esteja fora de suporte. O SDK do .NET
+    inclui NetAnalyzers (habilitados aqui), portanto não é necessária uma referência
+    explícita ao pacote; fixar EnableNETAnalyzers + AnalysisMode mantém o comportamento
+    consistente entre as versões do SDK usadas localmente e na CI.
 
-    Per-rule suppression summary:
-      * CA1014 — CLSCompliant attribute noise on net6.0-only solution.
-      * CA1848 — LoggerMessage source generator suggestion; the readability
-        of ILogger.LogInformation/LogError outweighs the perf micro-opt here.
-      * CA1873 — CultureInfo caching for log arguments; pass-through logging
-        already runs at information level and the cost is negligible.
-      * CA1305 — culture-dependent APIs; spot-fixed in tests via
-        IFormatProvider, suppressed elsewhere because culture-bound formatting
-        is acceptable for assessment logging output.
+    Resumo das supressões por regra:
+      * CA1014 — Aviso sobre o atributo CLSCompliant em uma solução exclusiva para net6.0.
+      * CA1848 — Sugestão do gerador de código LoggerMessage; neste caso, a legibilidade
+        de ILogger.LogInformation/LogError é mais importante que o pequeno ganho de desempenho.
+      * CA1873 — Cache de CultureInfo para argumentos de log; os logs encaminhados
+        já são gravados no nível Information e o custo é insignificante.
+      * CA1305 — APIs dependentes de cultura; corrigidas pontualmente nos testes com
+        IFormatProvider e suprimidas nos demais casos, pois a formatação dependente da
+        cultura é aceitável na saída de log da avaliação.
   -->
 
   <PropertyGroup>

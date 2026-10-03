@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
   <!--
-    Coverlet settings used by both `dotnet test` and the CI workflow.
+    Configurações do Coverlet usadas por `dotnet test` e pelo fluxo de CI.
 
-    * Format — cobertura is the de-facto standard consumable by GitHub
-      Actions coverage badges and code review integrations.
-    * ExcludeByAttribute — keeps generated and infra-only code out of the
-      reported coverage (migrations, DI composition, integration test
-      fakes, design-time factories).
-    * ExcludeByFile — coverage tooling should not chase unreachable paths
-      inside generated migration code.
+    * Format — cobertura é o padrão de fato consumido por indicadores de cobertura
+      do GitHub Actions e integrações de revisão de código.
+    * ExcludeByAttribute — mantém código gerado e código exclusivo de infraestrutura fora
+      da cobertura reportada (migrações, composição de DI, dublês de testes de integração
+      e fábricas de tempo de design).
+    * ExcludeByFile — as ferramentas de cobertura não devem analisar caminhos inalcançáveis
+      dentro do código gerado das migrações.
   -->
   <DataCollectionRunSettings>
     <DataCollectors>

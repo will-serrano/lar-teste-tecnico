@@ -11,14 +11,13 @@ using CandidateAssessment.Domain.Entities;
 namespace CandidateAssessment.Api.Facades;
 
 /// <summary>
-/// Thin Application-layer entry point for the <c>Persons</c> bounded context.
-/// Exists only to keep controllers from having to inject every use-case handler
-/// individually while preserving Vertical Slice Architecture on the Application
-/// side — each handler keeps its own dependencies, tests, and lifetime.
+/// Ponto de entrada enxuto da camada Application para o contexto delimitado <c>Persons</c>.
+/// Existe apenas para evitar que os controllers precisem injetar cada handler de caso de uso
+/// individualmente, preservando a arquitetura Vertical Slice na camada Application —
+/// cada handler mantém suas próprias dependências, testes e ciclo de vida.
 ///
-/// No business logic lives here; every method is a one-line forward to its
-/// handler. The controller's constructor goes from 11 dependencies
-/// (7 handlers + 4 validators) to 1.
+/// Não há lógica de negócio aqui; cada método apenas delega ao respectivo handler.
+/// O construtor do controller passa de 11 dependências (7 handlers + 4 validadores) para 1.
 /// </summary>
 public sealed class PersonsFacade
 {

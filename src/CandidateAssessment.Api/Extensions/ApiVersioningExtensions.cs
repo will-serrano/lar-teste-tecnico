@@ -5,15 +5,15 @@ namespace CandidateAssessment.Api.Extensions;
 internal static class ApiVersioningExtensions
 {
     /// <summary>
-    /// Configures API versioning that reads the version from the <c>X-Version</c>
-    /// header (or query string), with a default of <c>1.0</c> when the caller
-    /// does not specify one. Reporting is enabled so the response carries an
-    /// <c>api-supported-versions</c> header.
+    /// Configura o versionamento da API para ler a versão do cabeçalho <c>X-Version</c>
+    /// (ou da query string), usando <c>1.0</c> como padrão quando o cliente não
+    /// informar uma versão. O relatório fica habilitado para que a resposta inclua
+    /// o cabeçalho <c>api-supported-versions</c>.
     /// </summary>
     /// <remarks>
-    /// We intentionally keep URL paths as <c>/api/v1/...</c> for stability with
-    /// existing clients. The header-based reader is the seam for a future v2
-    /// rollout without breaking the v1 surface.
+    /// Mantemos intencionalmente os caminhos de URL como <c>/api/v1/...</c> para
+    /// preservar a estabilidade para os clientes existentes. A leitura pelo
+    /// cabeçalho permite lançar uma versão v2 futuramente sem quebrar a interface v1.
     /// </remarks>
     public static IServiceCollection AddApiVersioningWithExplorer(this IServiceCollection services)
     {

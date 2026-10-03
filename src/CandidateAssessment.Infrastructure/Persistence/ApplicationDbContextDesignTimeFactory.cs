@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore.Design;
 namespace CandidateAssessment.Infrastructure.Persistence;
 
 /// <summary>
-/// Design-time factory used by `dotnet ef` tools to construct the DbContext
-/// without bootstrapping the full host.
+/// Fábrica de tempo de design usada pelas ferramentas `dotnet ef` para criar o DbContext
+/// sem inicializar o host completo.
 /// </summary>
 public class ApplicationDbContextDesignTimeFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
 {

@@ -5,9 +5,9 @@ using System.Text.Json.Serialization;
 namespace CandidateAssessment.Api.Serialization;
 
 /// <summary>
-/// System.Text.Json converter for <see cref="DateOnly"/>.
-/// .NET 6 ships without native DateOnly support; this converter accepts and emits
-/// the ISO-8601 calendar date ("yyyy-MM-dd") format.
+/// Conversor de <see cref="DateOnly"/> para System.Text.Json.
+/// O .NET 6 não oferece suporte nativo a DateOnly; este conversor aceita e emite
+/// datas no formato de calendário ISO-8601 ("yyyy-MM-dd").
 /// </summary>
 public sealed class DateOnlyJsonConverter : JsonConverter<DateOnly>
 {
@@ -26,7 +26,7 @@ public sealed class DateOnlyJsonConverter : JsonConverter<DateOnly>
             return parsed;
         }
 
-        // Fallback for tolerant parsing (e.g. "1990-5-1").
+        // Alternativa para permitir análise mais flexível (por exemplo, "1990-5-1").
         if (DateOnly.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsed))
         {
             return parsed;

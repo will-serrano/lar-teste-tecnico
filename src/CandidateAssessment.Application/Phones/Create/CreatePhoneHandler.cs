@@ -54,7 +54,7 @@ public sealed class CreatePhoneHandler
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // Phone mutations alter the cached person snapshot.
+        // Alterações nos telefones modificam a projeção da pessoa armazenada em cache.
         await _personCache.InvalidateAsync(command.PersonId, cancellationToken);
 
         return phone.Id;

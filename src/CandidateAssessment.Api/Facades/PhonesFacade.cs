@@ -8,8 +8,8 @@ using CandidateAssessment.Domain.Entities;
 namespace CandidateAssessment.Api.Facades;
 
 /// <summary>
-/// Thin Application-layer entry point for the <c>Phones</c> bounded context.
-/// See <see cref="PersonsFacade"/> for the rationale — same trade-offs apply.
+/// Ponto de entrada enxuto da camada Application para o contexto delimitado <c>Phones</c>.
+/// Consulte <see cref="PersonsFacade"/> para entender a justificativa — os mesmos compromissos se aplicam.
 /// </summary>
 public sealed class PhonesFacade
 {

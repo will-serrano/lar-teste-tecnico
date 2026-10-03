@@ -1,13 +1,13 @@
 namespace CandidateAssessment.Application.Abstractions.Caching;
 
 /// <summary>
-/// Centralizes cache invalidation for the Person aggregate so mutation handlers
-/// stay free of cache-key construction. Keeps read and write paths in sync.
+/// Centraliza a invalidação do cache do agregado Person para que os handlers de mutação
+/// não precisem construir chaves de cache. Mantém os fluxos de leitura e gravação sincronizados.
 /// </summary>
 public interface IPersonCache
 {
     /// <summary>
-    /// Removes the cached Person detail for the given id, when present.
+    /// Remove do cache os detalhes da pessoa com o ID informado, se existirem.
     /// </summary>
     Task InvalidateAsync(Guid personId, CancellationToken cancellationToken = default);
 }

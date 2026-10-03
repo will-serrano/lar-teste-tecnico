@@ -70,9 +70,9 @@ public class PersonsApiTests
     [Fact]
     public async Task Should_ReturnAuditTimestampsOnCreate_When_RequestIsValid()
     {
-        // Regression: the controller used to hand-build the response from the
-        // request DTO, omitting CreatedAtUtc/UpdatedAtUtc. Those fields then
-        // surfaced as DateTime.MinValue ("0001-01-01T00:00:00") to API consumers.
+        // Regressão: o controller montava a resposta manualmente a partir do DTO da
+        // requisição, omitindo CreatedAtUtc/UpdatedAtUtc. Esses campos apareciam
+        // para os consumidores da API como DateTime.MinValue ("0001-01-01T00:00:00").
         var client = await _factory.CreateAuthenticatedAdminClientAsync();
         var before = DateTime.UtcNow.AddSeconds(-1);
         var request = new
@@ -97,7 +97,7 @@ public class PersonsApiTests
         Assert.Null(created.DeletedAtUtc);
         Assert.Null(created.RestoredAtUtc);
 
-        // Create maps the entity; GET maps the cached snapshot.
+        // Create mapeia a entidade; GET mapeia a projeção armazenada em cache.
         var fetched = await client.GetFromJsonAsync<PersonResponse>(
             $"/api/v1/persons/{created.Id}",
             JsonOptions);
@@ -109,8 +109,8 @@ public class PersonsApiTests
     [Fact]
     public async Task Should_AdvanceUpdatedAtUtc_WhenPersonIsUpdated()
     {
-        // After PUT, UpdatedAtUtc must change and CreatedAtUtc must stay
-        // pinned to the original creation moment.
+        // Após o PUT, UpdatedAtUtc deve mudar e CreatedAtUtc deve permanecer
+        // igual ao instante original de criação.
         var client = await _factory.CreateAuthenticatedAdminClientAsync();
         var create = await client.PostAsJsonAsync("/api/v1/persons", new
         {
@@ -176,7 +176,7 @@ public class PersonsApiTests
     public async Task Should_ReturnConflict_When_CpfIsMathematicallyInvalid()
     {
         var client = await _factory.CreateAuthenticatedAdminClientAsync();
-        // 00000000000 is rejected by the Cpf value object (all digits equal).
+        // 00000000000 é rejeitado pelo objeto de valor Cpf (todos os dígitos são iguais).
         var request = new
         {
             name = "Maria",
@@ -382,7 +382,7 @@ public class PersonsApiTests
     }
 
     /// <summary>
-    /// Generates a unique, mathematically valid CPF per call.
+    /// Gera um CPF único e matematicamente válido a cada chamada.
     /// </summary>
     private static string UniqueCpf()
     {

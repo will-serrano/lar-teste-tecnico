@@ -1,8 +1,8 @@
 namespace CandidateAssessment.Application.Abstractions.Pagination;
 
 /// <summary>
-/// Application-layer pagination wrapper. Domain entities flow through here
-/// and are mapped to API DTOs by controllers.
+/// Estrutura de paginação da camada Application. As entidades de domínio passam por aqui
+/// e são mapeadas para DTOs da API pelos controllers.
 /// </summary>
 public sealed record PagedResult<T>(
     IReadOnlyList<T> Items,

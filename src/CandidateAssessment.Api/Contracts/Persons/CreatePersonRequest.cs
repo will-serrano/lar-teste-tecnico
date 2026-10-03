@@ -1,7 +1,7 @@
 namespace CandidateAssessment.Api.Contracts.Persons;
 
 /// <summary>
-/// Request body for creating a person. CPF accepts formatted or digits-only input.
+/// Corpo da requisição para criar uma pessoa. O CPF aceita entrada formatada ou somente com dígitos.
 /// </summary>
 public sealed class CreatePersonRequest
 {

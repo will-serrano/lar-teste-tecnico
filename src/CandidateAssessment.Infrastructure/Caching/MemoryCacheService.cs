@@ -4,9 +4,9 @@ using Microsoft.Extensions.Caching.Memory;
 namespace CandidateAssessment.Infrastructure.Caching;
 
 /// <summary>
-/// In-process memory cache implementation backed by <see cref="IMemoryCache"/>.
-/// Application use cases are intentionally unaware of the backing technology
-/// (this class is only resolved via <see cref="ICacheService"/>).
+/// Implementação de cache em memória no processo, baseada em <see cref="IMemoryCache"/>.
+/// Os casos de uso da camada Application não conhecem intencionalmente a tecnologia
+/// subjacente (esta classe só é resolvida por meio de <see cref="ICacheService"/>).
 /// </summary>
 public sealed class MemoryCacheService : ICacheService
 {

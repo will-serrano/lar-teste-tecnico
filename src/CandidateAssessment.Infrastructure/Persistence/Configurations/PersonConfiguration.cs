@@ -47,7 +47,7 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.HasIndex(p => p.Name)
             .HasDatabaseName("IX_Persons_Name");
 
-        // Global query filter: soft delete hides inactive persons from normal queries.
+        // Filtro global de consulta: a exclusão lógica oculta pessoas inativas das consultas comuns.
         builder.HasQueryFilter(p => p.IsActive);
 
         builder.HasMany(p => p.Phones)

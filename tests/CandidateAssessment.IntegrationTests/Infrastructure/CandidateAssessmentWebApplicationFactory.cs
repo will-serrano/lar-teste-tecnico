@@ -13,11 +13,11 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace CandidateAssessment.IntegrationTests.Infrastructure;
 
 /// <summary>
-/// WebApplicationFactory that swaps the production SQLite database for an isolated
-/// SQLite in-memory connection that lives for the duration of the factory.
-/// The connection is kept open to preserve the in-memory database.
-/// Schema is created via <see cref="DatabaseFacade.EnsureCreated"/> during
-/// <see cref="EnsureDatabaseCreated"/> (called once per test class fixture).
+/// WebApplicationFactory que substitui o banco SQLite de produção por uma conexão
+/// SQLite em memória isolada, mantida durante todo o ciclo de vida da fábrica.
+/// A conexão permanece aberta para preservar o banco em memória.
+/// O esquema é criado por <see cref="DatabaseFacade.EnsureCreated"/> durante
+/// <see cref="EnsureDatabaseCreated"/> (chamado uma vez por fixture de classe de teste).
 /// </summary>
 public class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -53,9 +53,9 @@ public class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Pr
                 ["Serilog:MinimumLevel"] = "Warning",
                 ["Serilog:WriteToConsole"] = "false",
                 ["Serilog:WriteToFile"] = "false",
-                // Permissive limit so the existing suite is never tripped. The
-                // dedicated rate-limit test spins up its own factory with a
-                // tight quota and isolates the in-memory counter store.
+                // Limite permissivo para que a suíte existente nunca o ultrapasse. O
+                // teste dedicado de limitação de taxa inicia sua própria fábrica com
+                // uma cota restrita e isola o contador em memória.
                 ["IpRateLimiting:GeneralRules:0:Endpoint"] = "*",
                 ["IpRateLimiting:GeneralRules:0:Period"] = "1m",
                 ["IpRateLimiting:GeneralRules:0:Limit"] = "10000",
@@ -70,8 +70,8 @@ public class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Pr
     }
 
     /// <summary>
-    /// Forces the host to materialize and ensures the SQLite schema is created.
-    /// Subsequent calls are no-ops.
+    /// Força a inicialização do host e garante que o esquema SQLite seja criado.
+    /// Chamadas seguintes não fazem nada.
     /// </summary>
     public void EnsureDatabaseCreated()
     {
@@ -86,17 +86,17 @@ public class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Pr
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         dbContext.Database.EnsureCreated();
 
-        // Seed Identity immediately after schema creation. The lazy IdentitySeedMiddleware
-        // used at runtime would also handle this, but we run it explicitly here so that
-        // any subsequent test (which doesn't go through middleware before login) finds
-        // the seed users in place.
+        // Cria os dados iniciais do Identity logo após a criação do esquema. O
+        // IdentitySeedMiddleware, executado sob demanda em tempo de execução, também
+        // faria isso, mas o executamos explicitamente para que os testes seguintes
+        // (que não passam pelo middleware antes do login) encontrem os usuários iniciais.
         IdentityUserSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
 
         _schemaEnsured = true;
     }
 
     /// <summary>
-    /// Returns a fresh HttpClient with an Authorization header for the configured Admin user.
+    /// Retorna um HttpClient novo com o cabeçalho Authorization do usuário Admin configurado.
     /// </summary>
     public async Task<HttpClient> CreateAuthenticatedAdminClientAsync()
     {
@@ -108,7 +108,7 @@ public class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Pr
     }
 
     /// <summary>
-    /// Returns a fresh HttpClient with an Authorization header for the configured User role.
+    /// Retorna um HttpClient novo com o cabeçalho Authorization do usuário com papel User configurado.
     /// </summary>
     public async Task<HttpClient> CreateAuthenticatedUserClientAsync()
     {
@@ -148,8 +148,8 @@ public class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Pr
         services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
         services.RemoveAll<ApplicationDbContext>();
 
-        // Remove any EF Core internal option configuration registrations for the context.
-        // The interface lives in Microsoft.EntityFrameworkCore.Infrastructure.
+        // Remove todos os registros internos de configuração de opções do EF Core para o contexto.
+        // A interface pertence a Microsoft.EntityFrameworkCore.Infrastructure.
         var internalDescriptors = services
             .Where(d => d.ServiceType.IsGenericType
                 && d.ServiceType.FullName != null

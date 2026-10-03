@@ -9,7 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace CandidateAssessment.Api.Authentication;
 
 /// <summary>
-/// Issues short-lived JWT access tokens using the configured signing key.
+/// Emite tokens de acesso JWT de curta duração usando a chave de assinatura configurada.
 /// </summary>
 public sealed class JwtTokenService : ITokenService
 {

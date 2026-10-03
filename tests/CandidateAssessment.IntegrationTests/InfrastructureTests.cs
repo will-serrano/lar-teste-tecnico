@@ -10,8 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace CandidateAssessment.IntegrationTests;
 
 /// <summary>
-/// End-to-end coverage for the production-grade features introduced in Stage 4:
-/// health checks, rate limiting, and Person detail cache invalidation.
+/// Cobertura de ponta a ponta dos recursos prontos para produção introduzidos na etapa 4:
+/// verificações de integridade, limitação de taxa e invalidação do cache de detalhes de Person.
 /// </summary>
 [Collection(IntegrationTestCollection.Name)]
 public class InfrastructureTests
@@ -68,7 +68,7 @@ public class InfrastructureTests
     [Fact]
     public async Task Health_LivenessProbe_ShouldReturnHealthy()
     {
-        // Liveness does not require auth and does not probe dependencies.
+        // A verificação de atividade não exige autenticação nem consulta dependências.
         var client = _factory.CreateClient();
         var response = await client.GetAsync("/health");
 
@@ -91,8 +91,8 @@ public class InfrastructureTests
     [Fact]
     public async Task RateLimit_ShouldExceedLimit_AfterBurstingRequests()
     {
-        // A dedicated factory is used so the strict 5/15s quota cannot bleed
-        // into other tests that share the main collection's in-memory counter.
+        // Usa uma fábrica dedicada para que a cota restrita de 5/15 s não afete
+        // outros testes que compartilham o contador em memória da coleção principal.
         using var tightFactory = new RateLimitedWebApplicationFactory();
         tightFactory.EnsureDatabaseCreated();
 
@@ -105,8 +105,8 @@ public class InfrastructureTests
             statuses.Add(response.StatusCode);
         }
 
-        // We only assert that at least one rate-limited response happened, which
-        // proves the middleware is wired and applies the configured quota.
+        // Basta confirmar que houve ao menos uma resposta limitada para provar
+        // que o middleware está configurado e aplica a cota definida.
         Assert.Contains(HttpStatusCode.TooManyRequests, statuses);
     }
 
@@ -123,19 +123,19 @@ public class InfrastructureTests
         });
         var created = await create.Content.ReadFromJsonAsync<PersonResponse>(JsonOptions);
 
-        // First read populates the cache.
+        // A primeira leitura preenche o cache.
         var first = await client.GetFromJsonAsync<PersonResponse>(
             $"/api/v1/persons/{created!.Id}",
             JsonOptions);
         Assert.Equal("Cache Person", first!.Name);
 
-        // Mutate.
+        // Altera os dados.
         var update = await client.PutAsJsonAsync(
             $"/api/v1/persons/{created.Id}",
             new { name = "Cache Person Updated", birthDate = "1990-01-01" });
         Assert.Equal(HttpStatusCode.NoContent, update.StatusCode);
 
-        // Subsequent read must reflect the update (cache was invalidated).
+        // A leitura seguinte deve refletir a alteração (o cache foi invalidado).
         var second = await client.GetFromJsonAsync<PersonResponse>(
             $"/api/v1/persons/{created.Id}",
             JsonOptions);
@@ -155,19 +155,19 @@ public class InfrastructureTests
         });
         var created = await create.Content.ReadFromJsonAsync<PersonResponse>(JsonOptions);
 
-        // Prime the cache with no phones.
+        // Preenche o cache inicialmente sem telefones.
         var first = await client.GetFromJsonAsync<PersonResponse>(
             $"/api/v1/persons/{created!.Id}",
             JsonOptions);
         Assert.NotNull(first);
 
-        // Add a phone.
+        // Adiciona um telefone.
         var addPhone = await client.PostAsJsonAsync(
             $"/api/v1/persons/{created.Id}/phones",
             new { type = "Mobile", number = "13999999999" });
         Assert.Equal(HttpStatusCode.Created, addPhone.StatusCode);
 
-        // List phones through the phones endpoint to confirm persistence.
+        // Lista os telefones pelo endpoint correspondente para confirmar a persistência.
         var phones = await client.GetFromJsonAsync<List<PhoneResponse>>(
             $"/api/v1/persons/{created.Id}/phones",
             JsonOptions);
@@ -178,8 +178,8 @@ public class InfrastructureTests
     [Fact]
     public void ApiVersioning_ShouldDecorateControllers_WithApiVersionAttribute()
     {
-        // Walk the loaded assemblies to verify that all controllers carry the
-        // [ApiVersion] attribute (proves the versioning wiring is in place).
+        // Percorre os assemblies carregados para verificar se todos os controllers
+        // têm o atributo [ApiVersion] (comprovando a configuração do versionamento).
         var apiAssembly = typeof(CandidateAssessment.Api.Controllers.PersonsController).Assembly;
         var versioned = apiAssembly
             .GetTypes()
@@ -191,7 +191,7 @@ public class InfrastructureTests
         Assert.NotEmpty(versioned);
         Assert.All(versioned, attr =>
         {
-            // Each ApiVersion attribute must include a 1.0 version.
+            // Cada atributo ApiVersion deve incluir a versão 1.0.
             Assert.Contains(attr.Versions, v => v.MajorVersion == 1 && v.MinorVersion == 0);
         });
     }
@@ -209,7 +209,7 @@ public class InfrastructureTests
     }
 
     /// <summary>
-    /// Generates a unique, mathematically valid CPF per call.
+    /// Gera um CPF único e matematicamente válido a cada chamada.
     /// </summary>
     private static string UniqueCpf()
     {

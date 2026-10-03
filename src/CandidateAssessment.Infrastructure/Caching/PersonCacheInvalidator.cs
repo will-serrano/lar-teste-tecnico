@@ -3,9 +3,9 @@ using CandidateAssessment.Application.Abstractions.Caching;
 namespace CandidateAssessment.Infrastructure.Caching;
 
 /// <summary>
-/// Memory-backed implementation of <see cref="IPersonCache"/>.
-/// Resolves the cache key through <see cref="PersonCacheKeys"/> so the
-/// invalidation always targets the same key the read path produces.
+/// Implementação de <see cref="IPersonCache"/> baseada em memória.
+/// Obtém a chave de cache por meio de <see cref="PersonCacheKeys"/> para que a
+/// invalidação sempre use a mesma chave gerada pelo fluxo de leitura.
 /// </summary>
 public sealed class PersonCacheInvalidator : IPersonCache
 {
@@ -19,8 +19,8 @@ public sealed class PersonCacheInvalidator : IPersonCache
 
     public Task InvalidateAsync(Guid personId, CancellationToken cancellationToken = default)
     {
-        // personId is a value type, so an explicit null check is redundant
-        // (CA2264). Cancellation is forwarded to the underlying cache call.
+        // personId é um tipo por valor, portanto uma verificação explícita de null é redundante
+        // (CA2264). O cancelamento é encaminhado à chamada do cache subjacente.
         return _cache.RemoveAsync(PersonCacheKeys.ForDetail(personId), cancellationToken);
     }
 }

@@ -39,8 +39,8 @@ public static class DependencyInjection
 
     private static void AddCaching(IServiceCollection services, IConfiguration configuration)
     {
-        // Memory cache backing. The abstraction (ICacheService) is the only contract
-        // Application knows about; switching to Redis later is a one-line swap here.
+        // Armazenamento do cache em memória. A abstração (ICacheService) é o único contrato
+        // conhecido pela camada Application; futuramente, trocar por Redis exige alterar apenas esta linha.
         services.AddMemoryCache();
 
         services.Configure<CacheOptions>(configuration.GetSection(CacheOptions.SectionName));

@@ -1,8 +1,8 @@
 name: CI
 
-# Stage 5 — pipeline that mirrors the Definition of Done. Each step has a
-# single responsibility so failures point at the failing concern without
-# obscuring the rest of the report.
+# Etapa 5 — pipeline que reproduz os critérios de conclusão. Cada etapa tem
+# uma única responsabilidade para que as falhas indiquem o problema específico
+# sem prejudicar a análise do restante do relatório.
 
 on:
   push:
@@ -39,22 +39,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      # ---- Restore + Build -----------------------------------------------
+      # ---- Restauração + compilação --------------------------------------
       - name: Restore
         run: dotnet restore CandidateAssessment.sln
 
       - name: Build
         run: dotnet build CandidateAssessment.sln -c Release --no-restore /warnaserror:NETSDK1138
-        # NETSDK1138 (EOL framework) is escalated to an error in CI even
-        # though the assessment requires net6.0. This guards the build
-        # against accidental upgrade to an unsupported target while
-        # preserving the project's documented .NET 6 commitment.
+        # NETSDK1138 (framework fora de suporte) é tratado como erro na CI,
+        # embora o projeto exija net6.0. Isso impede a atualização acidental
+        # para um destino sem suporte e preserva o compromisso documentado
+        # do projeto com o .NET 6.
 
-      # ---- Formatting gate ----------------------------------------------
+      # ---- Verificação de formatação -------------------------------------
       - name: Verify formatting
         run: dotnet format CandidateAssessment.sln --verify-no-changes --verbosity diagnostic
 
-      # ---- Tests + coverage ----------------------------------------------
+      # ---- Testes + cobertura --------------------------------------------
       - name: Run unit tests with coverage
         run: >
           dotnet test tests/CandidateAssessment.UnitTests/CandidateAssessment.UnitTests.csproj
@@ -71,7 +71,7 @@ jobs:
           --collect:"XPlat Code Coverage"
           --results-directory ./coverage/integration
 
-      # ---- Coverage summary (printed; can be uploaded to a service later) -
+      # ---- Resumo da cobertura (exibido; pode ser enviado a um serviço depois) -
       - name: Summarise coverage
         shell: pwsh
         run: |
@@ -90,7 +90,7 @@ jobs:
           }
           Write-Host "`nCoverage collected. Reports stored under ./coverage/."
 
-      # ---- Build a Docker image so the pipeline also proves the Dockerfile
+      # ---- Cria uma imagem Docker para que o pipeline também valide o Dockerfile
       - name: Build Docker image
         run: docker build -t candidateassessment-api:ci .
 
@@ -101,7 +101,7 @@ jobs:
             -e Jwt__SigningKey="REPLACE-WITH-AT-LEAST-32-BYTES-SECRET-IN-PRODUCTION" \
             -e ConnectionStrings__DefaultConnection="Data Source=/tmp/candidate.db" \
             candidateassessment-api:ci
-          # Wait up to ~60s for the readiness probe to come back 200.
+          # Aguarda até ~60 s para que a verificação de prontidão retorne 200.
           for i in $(seq 1 30); do
             if curl -fsS http://localhost:8080/health/ready >/dev/null 2>&1; then
               echo "Container is healthy."
@@ -116,7 +116,7 @@ jobs:
           docker stop candidate-ci || true
           exit 1
 
-      # ---- Upload coverage as an artifact --------------------------------
+      # ---- Envio da cobertura como artefato -------------------------------
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         if: always()

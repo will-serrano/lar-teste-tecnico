@@ -1,8 +1,8 @@
 namespace CandidateAssessment.Application.Abstractions.Authentication;
 
 /// <summary>
-/// Abstraction over ASP.NET Core Identity user/role operations, keeping the
-/// Application layer free of direct dependency on Microsoft.AspNetCore.Identity.
+/// Abstração das operações de usuário/papel do ASP.NET Core Identity, mantendo a
+/// camada Application sem dependência direta de Microsoft.AspNetCore.Identity.
 /// </summary>
 public interface IUserAuthenticationService
 {

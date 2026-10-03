@@ -1,8 +1,8 @@
 namespace CandidateAssessment.Api.Contracts.Persons;
 
 /// <summary>
-/// Default person representation returned by the API.
-/// CPF is returned masked by default to avoid leaking sensitive identifiers.
+/// Representação padrão de pessoa retornada pela API.
+/// Por padrão, o CPF é mascarado para evitar a exposição de identificadores sensíveis.
 /// </summary>
 public sealed class PersonResponse
 {

@@ -3,7 +3,7 @@ using CandidateAssessment.Domain.ValueObjects;
 namespace CandidateAssessment.Api.Contracts;
 
 /// <summary>
-/// Helper used at controller boundaries to format a CPF without duplicating logic.
+/// Auxiliar usado nas fronteiras dos controllers para formatar um CPF sem duplicar lógica.
 /// </summary>
 internal static class CpfFormatter
 {
@@ -14,8 +14,8 @@ internal static class CpfFormatter
             return parsed.Format();
         }
 
-        // Fall back to input if the value cannot be parsed as CPF.
-        // This should not happen for validated inputs but avoids leaking exceptions.
+        // Usa o valor de entrada como alternativa caso não seja possível interpretá-lo como CPF.
+        // Isso não deve ocorrer com entradas validadas, mas evita propagar exceções.
         return cpf;
     }
 }

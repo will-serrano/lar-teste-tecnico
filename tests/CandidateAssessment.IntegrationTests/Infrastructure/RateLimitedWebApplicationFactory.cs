@@ -4,10 +4,10 @@ using Microsoft.Extensions.Configuration;
 namespace CandidateAssessment.IntegrationTests.Infrastructure;
 
 /// <summary>
-/// A dedicated WebApplicationFactory for the rate-limiting test, configured with
-/// a strict per-IP quota. Kept outside the shared collection because the rate
-/// limit counter store persists across requests — the shared suite would
-/// otherwise exhaust the budget for unrelated tests.
+/// WebApplicationFactory dedicada ao teste de limitação de taxa, configurada com
+/// uma cota restrita por IP. Mantida fora da coleção compartilhada porque o contador
+/// de requisições persiste entre chamadas — caso contrário, a suíte compartilhada
+/// esgotaria a cota de testes sem relação com esse cenário.
 /// </summary>
 public sealed class RateLimitedWebApplicationFactory : CandidateAssessmentWebApplicationFactory
 {

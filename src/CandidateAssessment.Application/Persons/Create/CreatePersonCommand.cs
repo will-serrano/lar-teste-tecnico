@@ -1,10 +1,10 @@
 namespace CandidateAssessment.Application.Persons.Create;
 
 /// <summary>
-/// Command to create a new person.
-/// CPF is accepted as raw input (formatted or digits) and validated by the
-/// Domain value object; structural rules (length, regex) are validated by
-/// the validator.
+/// Comando para criar uma pessoa.
+/// O CPF é aceito como entrada bruta (formatado ou apenas com dígitos) e validado pelo
+/// objeto de valor Domain; as regras estruturais (tamanho e expressão regular) são
+/// validadas pelo validador.
 /// </summary>
 public sealed record CreatePersonCommand(
     string Name,

@@ -1,8 +1,8 @@
 namespace CandidateAssessment.Application.Abstractions.Pagination;
 
 /// <summary>
-/// Default pagination contract used by Application use cases.
-/// Controllers adapt incoming query strings to these values.
+/// Contrato padrão de paginação usado pelos casos de uso da camada Application.
+/// Os controllers adaptam as query strings recebidas para estes valores.
 /// </summary>
 public static class PaginationOptions
 {

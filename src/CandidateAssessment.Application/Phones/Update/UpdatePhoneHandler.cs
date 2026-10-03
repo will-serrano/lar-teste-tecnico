@@ -47,7 +47,7 @@ public sealed class UpdatePhoneHandler
 
         var phoneNumber = PhoneNumber.Create(command.Number, command.Type);
 
-        // Allow keeping the same number/type without false-positive duplicate detection.
+        // Permite manter o mesmo número/tipo sem gerar um falso positivo na detecção de duplicatas.
         var sameSlot = phone.Number == phoneNumber.Value && phone.Type == command.Type;
         if (!sameSlot
             && await _phoneRepository.ExistsForPersonAsync(

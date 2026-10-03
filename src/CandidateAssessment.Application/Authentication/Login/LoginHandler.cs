@@ -5,7 +5,7 @@ using CandidateAssessment.Application.Exceptions;
 namespace CandidateAssessment.Application.Authentication.Login;
 
 /// <summary>
-/// Authenticates a user via ASP.NET Core Identity and returns a JWT access token.
+/// Autentica um usuário pelo ASP.NET Core Identity e retorna um token de acesso JWT.
 /// </summary>
 public sealed class LoginHandler
 {

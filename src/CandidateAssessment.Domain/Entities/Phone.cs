@@ -5,7 +5,7 @@ using CandidateAssessment.Domain.ValueObjects;
 namespace CandidateAssessment.Domain.Entities;
 
 /// <summary>
-/// Phone attached to a Person. Subjected to hard delete.
+/// Telefone associado a uma pessoa. Sujeito à exclusão permanente.
 /// </summary>
 public sealed class Phone
 {
@@ -23,7 +23,7 @@ public sealed class Phone
 
     public DateTime UpdatedAtUtc { get; private set; }
 
-    // EF Core parameterless constructor.
+    // Construtor sem parâmetros exigido pelo EF Core.
     private Phone()
     {
     }

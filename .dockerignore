@@ -1,4 +1,4 @@
-# Avoid copying development artifacts and secrets into the build context.
+# Evita copiar artefatos de desenvolvimento e segredos para o contexto de build.
 **/bin/
 **/obj/
 **/.vs/
@@ -7,28 +7,28 @@
 **/.git/
 **/.github/
 
-# Test outputs and coverage reports.
+# Saídas dos testes e relatórios de cobertura.
 **/TestResults/
 **/coverage/
 **/*.coverage
 **/coveragereport/
 
-# Local databases and SQLite artefacts.
+# Bancos de dados locais e arquivos SQLite.
 **/*.db
 **/*.db-shm
 **/*.db-wal
 
-# Local logs that would only add noise.
+# Logs locais que apenas gerariam ruído.
 **/Logs/
 
-# Documentation and planning artefacts (kept outside the runtime image).
+# Documentação e arquivos de planejamento (mantidos fora da imagem de execução).
 docs/
 plan.md
 README.md
 
-# Editor / OS noise.
+# Arquivos residuais do editor e do sistema operacional.
 **/.DS_Store
 **/Thumbs.db
 
-# Keep .editorconfig available during restore for analyzer configuration.
+# Mantém .editorconfig disponível durante a restauração para configurar os analisadores.
 !**/.editorconfig

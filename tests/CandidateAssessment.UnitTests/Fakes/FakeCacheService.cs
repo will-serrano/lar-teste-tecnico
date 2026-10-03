@@ -3,8 +3,9 @@ using CandidateAssessment.Application.Abstractions.Caching;
 namespace CandidateAssessment.UnitTests.Fakes;
 
 /// <summary>
-/// In-memory <see cref="ICacheService"/> stub for unit tests.
-/// Stores entries in a dictionary so tests can assert Get/Set/Remove behavior.
+/// Implementação substituta de <see cref="ICacheService"/> em memória para testes de unidade.
+/// Armazena entradas em um dicionário para que os testes possam verificar o comportamento
+/// de Get/Set/Remove.
 /// </summary>
 internal sealed class FakeCacheService : ICacheService
 {

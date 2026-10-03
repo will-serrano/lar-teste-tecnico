@@ -22,8 +22,8 @@ namespace CandidateAssessment.Api;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Registers API-layer services (controllers, validators, JSON, auth, swagger,
-    /// versioning, rate limiting, health checks).
+    /// Registra os serviços da camada da API (controllers, validadores, JSON, autenticação, Swagger,
+    /// versionamento, limitação de taxa e verificações de integridade).
     /// </summary>
     public static IServiceCollection AddPresentation(
         this IServiceCollection services,
@@ -34,11 +34,12 @@ public static class DependencyInjection
 
         services.AddControllers(options =>
             {
-                // Single global filter replaces the per-action validation boilerplate
-                // that used to live in every controller. Validation is still opt-in by
-                // type — only arguments with a registered IValidator<T> are checked —
-                // and on failure the filter short-circuits with a ValidationProblemDetails
-                // 400 carrying the same property-keyed errors as the manual version.
+                // Um único filtro global substitui o código repetitivo de validação por ação
+                // que antes existia em cada controller. A validação continua sendo opt-in por
+                // tipo — somente argumentos com um IValidator<T> registrado são verificados —
+                // e, em caso de falha, o filtro interrompe a execução e retorna um
+                // ValidationProblemDetails 400 com os mesmos erros indexados por propriedade
+                // da versão manual.
                 options.Filters.Add<ValidationActionFilter>();
             })
             .AddJsonOptions(options =>
@@ -54,10 +55,10 @@ public static class DependencyInjection
         services.AddScoped<IValidator<UpdatePhoneRequest>, UpdatePhoneRequestValidator>();
         services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
 
-        // Facades over the Application handlers. Controllers depend only on these so
-        // the bloated constructor (11 deps on PersonsController, 7 on PhonesController)
-        // collapses to one. Each handler is still independently registered, testable,
-        // and owns its own dependencies — the façade is a pure delegate.
+        // Fachadas para os handlers da camada Application. Os controllers dependem apenas delas,
+        // reduzindo os construtores extensos (11 dependências em PersonsController e 7 em
+        // PhonesController) a uma. Cada handler continua registrado e testável de forma
+        // independente, além de manter suas próprias dependências — a fachada apenas delega.
         services.AddScoped<PersonsFacade>();
         services.AddScoped<PhonesFacade>();
 
@@ -73,8 +74,8 @@ public static class DependencyInjection
 
         services.AddEndpointsApiExplorer();
 
-        // Order matters: versioning must be registered before Swagger so the
-        // versioned API explorer populates a "v1" Swagger document.
+        // A ordem importa: o versionamento deve ser registrado antes do Swagger para que o
+        // explorador da API versionada preencha um documento Swagger "v1".
         services.AddApiVersioningWithExplorer();
 
         services.AddApiRateLimiting(configuration);
@@ -137,9 +138,9 @@ public static class DependencyInjection
 
     private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
     {
-        // Bind JwtOptions through the options pattern so the JwtBearer middleware
-        // and JwtTokenService both read the merged configuration (including
-        // test overrides applied after Program.cs has begun wiring services).
+        // Vincula JwtOptions pelo padrão Options para que o middleware JwtBearer e o
+        // JwtTokenService leiam a configuração combinada (incluindo substituições dos testes
+        // aplicadas depois que Program.cs inicia o registro dos serviços).
         services.AddOptions<JwtOptions>()
             .Bind(configuration.GetSection(JwtOptions.SectionName))
             .ValidateDataAnnotations()

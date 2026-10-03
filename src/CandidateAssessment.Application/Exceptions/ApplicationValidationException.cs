@@ -3,9 +3,9 @@ using FluentValidation.Results;
 namespace CandidateAssessment.Application.Exceptions;
 
 /// <summary>
-/// Exception thrown by Application use cases when an input fails application-level
-/// validation rules (e.g. CPF already in use, target resource not found).
-/// Mapped to ProblemDetails (400/404/409) by the API exception middleware.
+/// Exceção lançada pelos casos de uso da camada Application quando uma entrada não atende às
+/// regras de validação dessa camada (por exemplo, CPF já utilizado ou recurso não encontrado).
+/// Convertida em ProblemDetails (400/404/409) pelo middleware de exceções da API.
 /// </summary>
 public class ApplicationValidationException : Exception
 {

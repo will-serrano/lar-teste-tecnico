@@ -1,7 +1,7 @@
 namespace CandidateAssessment.UnitTests.Fakes;
 
 /// <summary>
-/// Builds cache-related fakes consistently across handler tests.
+/// Cria dublês de cache de forma consistente entre os testes dos handlers.
 /// </summary>
 internal static class TestCacheFactory
 {

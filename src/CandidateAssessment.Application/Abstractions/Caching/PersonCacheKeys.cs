@@ -1,9 +1,9 @@
 namespace CandidateAssessment.Application.Abstractions.Caching;
 
 /// <summary>
-/// Centralizes cache keys for the Person aggregate so producers and consumers
-/// stay in sync. Invalidation of any person detail also covers the
-/// "active person by id" read path.
+/// Centraliza as chaves de cache do agregado Person para manter produtores e consumidores
+/// sincronizados. A invalidação de qualquer detalhe da pessoa também abrange o fluxo de
+/// leitura por ID de pessoa ativa.
 /// </summary>
 public static class PersonCacheKeys
 {

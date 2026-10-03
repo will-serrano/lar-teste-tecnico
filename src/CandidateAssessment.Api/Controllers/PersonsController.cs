@@ -43,11 +43,11 @@ public class PersonsController : ControllerBase
         var command = new CreatePersonCommand(request.Name, request.Cpf, request.BirthDate);
         var id = await _persons.CreateAsync(command, cancellationToken);
 
-        // Re-read the person so the 201 response carries the timestamps persisted by
-        // the domain (CreatedAtUtc/UpdatedAtUtc). Building the DTO directly from the
-        // request — as the previous version did — silently dropped those fields and
-        // made them surface as DateTime.MinValue (0001-01-01T00:00:00). Mirrors the
-        // pattern already used by PhonesController.Create.
+        // Lê a pessoa novamente para que a resposta 201 inclua os timestamps persistidos pelo
+        // domínio (CreatedAtUtc/UpdatedAtUtc). Criar o DTO diretamente a partir da requisição —
+        // como fazia a versão anterior — descartava esses campos silenciosamente e fazia com que
+        // aparecessem como DateTime.MinValue (0001-01-01T00:00:00). Segue o padrão já usado por
+        // PhonesController.Create.
         var cached = await _persons.GetByIdAsync(new GetPersonByIdQuery(id), cancellationToken);
 
         return CreatedAtAction(nameof(GetById), new { id }, cached.ToResponse());

@@ -4,14 +4,14 @@ namespace CandidateAssessment.Api.Extensions;
 
 internal static class HealthChecksExtensions
 {
-    // Hoisted to a static readonly array so the health-check registration does
-    // not allocate a new tag array on every host start (CA1861).
+    // Armazenado em um array static readonly para que o registro das verificações de
+    // integridade não aloque um novo array de tags a cada inicialização do host (CA1861).
     private static readonly string[] _databaseHealthTags = ["ready", "db"];
 
     /// <summary>
-    /// Registers liveness and readiness checks. The readiness probe verifies
-    /// that the SQLite database can be reached; the liveness probe only
-    /// confirms the process is responsive.
+    /// Registra verificações de atividade e prontidão. A verificação de prontidão confirma
+    /// que o banco SQLite está acessível; a verificação de atividade apenas confirma
+    /// que o processo está respondendo.
     /// </summary>
     public static IServiceCollection AddApiHealthChecks(this IServiceCollection services)
     {

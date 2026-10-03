@@ -1,10 +1,10 @@
 namespace CandidateAssessment.Api.Configuration;
 
 /// <summary>
-/// Placeholder for API-layer Cache binding (kept distinct from Application's
+/// Tipo reservado para a vinculação de Cache na camada da API (mantido separado do tipo
 /// <see cref="CandidateAssessment.Application.Abstractions.Caching.CacheOptions"/>)
-/// to avoid a cross-layer reference at composition time.
-/// The actual handler-level options are resolved from configuration through DI.
+/// para evitar uma referência entre camadas durante a composição.
+/// As opções efetivamente usadas pelos handlers são resolvidas da configuração via DI.
 /// </summary>
 internal static class CacheSection
 {

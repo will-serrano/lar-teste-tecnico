@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations;
 namespace CandidateAssessment.Api.Configuration;
 
 /// <summary>
-/// Strongly-typed JWT configuration. Bound from the "Jwt" section.
-/// Secrets must be supplied via environment variables or a secret manager in production.
+/// Configuração JWT fortemente tipada. Vinculada à seção "Jwt".
+/// Em produção, os segredos devem ser fornecidos por variáveis de ambiente ou por um gerenciador de segredos.
 /// </summary>
 public sealed class JwtOptions
 {
@@ -20,7 +20,7 @@ public sealed class JwtOptions
     public string SigningKey { get; set; } = default!;
 
     /// <summary>
-    /// Access token lifetime in minutes. Defaults to 60.
+    /// Tempo de vida do token de acesso em minutos. O padrão é 60.
     /// </summary>
     [Range(1, 24 * 60)]
     public int ExpiresInMinutes { get; set; } = 60;

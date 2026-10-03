@@ -3,9 +3,9 @@ using CandidateAssessment.Infrastructure.Authentication;
 namespace CandidateAssessment.Api.Middleware;
 
 /// <summary>
-/// Runs the Identity seeder lazily on the first request, ensuring the database
-/// schema already exists when the seeder runs. Using a request-based trigger
-/// avoids the ordering problem between host startup and migration/EnsureCreated.
+/// Executa o seeder do Identity de forma tardia na primeira requisição, garantindo que o
+/// esquema do banco já exista quando o seeder for executado. O acionamento por requisição
+/// evita problemas de ordenação entre a inicialização do host e a migração/EnsureCreated.
 /// </summary>
 public sealed class IdentitySeedMiddleware
 {
@@ -26,7 +26,8 @@ public sealed class IdentitySeedMiddleware
 }
 
 /// <summary>
-/// Process-wide gate so the seeder runs only once per application lifetime.
+/// Controle global ao processo para que o seeder seja executado apenas uma vez durante
+/// o ciclo de vida da aplicação.
 /// </summary>
 public static class IdentitySeedGate
 {
@@ -45,8 +46,8 @@ public static class IdentitySeedGate
         }
         catch
         {
-            // If the schema is not ready yet (very first request in production before
-            // migration completes), allow another request to retry.
+            // Se o esquema ainda não estiver pronto (primeira requisição em produção antes de
+            // a migração terminar), permite que outra requisição tente novamente.
             Interlocked.Exchange(ref _seeded, 0);
             throw;
         }

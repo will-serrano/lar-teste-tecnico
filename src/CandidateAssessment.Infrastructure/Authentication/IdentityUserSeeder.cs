@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 namespace CandidateAssessment.Infrastructure.Authentication;
 
 /// <summary>
-/// Ensures the two default roles and seed accounts exist. Idempotent — safe to call
-/// on every startup.
+/// Garante que os dois papéis padrão e as contas iniciais existam. É idempotente — seguro
+/// para executar a cada inicialização.
 /// </summary>
 public static class IdentityUserSeeder
 {

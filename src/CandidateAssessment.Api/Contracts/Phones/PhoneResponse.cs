@@ -3,7 +3,7 @@ using CandidateAssessment.Domain.Enums;
 namespace CandidateAssessment.Api.Contracts.Phones;
 
 /// <summary>
-/// Phone representation returned by the API.
+/// Representação de telefone retornada pela API.
 /// </summary>
 public sealed class PhoneResponse
 {

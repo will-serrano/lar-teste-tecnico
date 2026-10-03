@@ -1,7 +1,7 @@
 namespace CandidateAssessment.Application.Abstractions.Time;
 
 /// <summary>
-/// Abstraction for retrieving the current UTC date and time.
+/// Abstração para obter a data e hora UTC atuais.
 /// </summary>
 public interface IDateTimeProvider
 {

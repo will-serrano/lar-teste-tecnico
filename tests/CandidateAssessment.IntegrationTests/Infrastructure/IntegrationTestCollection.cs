@@ -1,8 +1,9 @@
 namespace CandidateAssessment.IntegrationTests.Infrastructure;
 
 /// <summary>
-/// xUnit collection that serializes integration tests across classes to avoid
-/// concurrent access to the shared in-memory SQLite database and Identity seed gate.
+/// Coleção do xUnit que serializa os testes de integração entre classes para evitar
+/// acesso concorrente ao banco SQLite compartilhado em memória e ao controle de criação
+/// dos dados iniciais do Identity.
 /// </summary>
 [CollectionDefinition(Name)]
 public class IntegrationTestCollection : ICollectionFixture<CandidateAssessmentWebApplicationFactory>

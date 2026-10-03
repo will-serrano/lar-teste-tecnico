@@ -4,8 +4,8 @@ using CandidateAssessment.Domain.Exceptions;
 namespace CandidateAssessment.Domain.ValueObjects;
 
 /// <summary>
-/// Brazilian phone number value object. Stores only digits.
-/// Length is 10 (landline) or 11 (mobile / commercial with area code +9).
+/// Objeto de valor de número de telefone brasileiro. Armazena somente dígitos.
+/// O tamanho é 10 (telefone fixo) ou 11 (celular/comercial com nono dígito após o DDD).
 /// </summary>
 public sealed record class PhoneNumber
 {

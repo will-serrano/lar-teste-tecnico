@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations;
 namespace CandidateAssessment.Api.Configuration;
 
 /// <summary>
-/// Configuration for seeding initial Admin and User accounts on startup.
-/// Passwords are never stored in source-controlled configuration files.
+/// Configuração para criar as contas iniciais Admin e User na inicialização.
+/// Senhas nunca são armazenadas em arquivos de configuração versionados.
 /// </summary>
 public sealed class SeedUsersOptions
 {

@@ -6,22 +6,21 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 namespace CandidateAssessment.Api.Validation;
 
 /// <summary>
-/// Global action filter that runs every registered <see cref="IValidator{T}"/>
-/// for each action argument before the action executes, so controllers do not
-/// have to inject validators, build queries, or copy error messages into
-/// <c>ModelState</c> by hand.
+/// Filtro global de ação que executa cada <see cref="IValidator{T}"/> registrado
+/// para cada argumento da ação antes de sua execução, evitando que os controllers
+/// precisem injetar validadores, criar consultas ou copiar mensagens de erro para
+/// <c>ModelState</c> manualmente.
 ///
-/// Resolution is opt-in by type: an argument is only validated when a closed
-/// <c>IValidator&lt;T&gt;</c> for its runtime type is registered in the DI
-/// container. This keeps the filter side-effect-free for framework-level
-/// arguments (route ids, <see cref="CancellationToken"/>, etc.) and makes
-/// adding a new endpoint automatic — register the validator and validation
-/// "just works".
+/// A resolução é opt-in por tipo: um argumento só é validado quando um
+/// <c>IValidator&lt;T&gt;</c> fechado para seu tipo em tempo de execução está registrado
+/// no contêiner de DI. Isso mantém o filtro sem efeitos colaterais para argumentos
+/// do framework (IDs de rota, <see cref="CancellationToken"/> etc.) e automatiza
+/// a validação de novos endpoints — basta registrar o validador.
 ///
-/// On failure, the filter populates the controller's <c>ModelState</c> with
-/// a key per property (falling back to <c>"request"</c>/<c>"query"</c>) and
-/// short-circuits with a <c>ValidationProblemDetails</c> 400 response, matching
-/// the existing manual behavior in every controller.
+/// Em caso de falha, o filtro preenche o <c>ModelState</c> do controller com
+/// uma chave por propriedade (usando <c>"request"</c>/<c>"query"</c> como alternativa)
+/// e interrompe a execução com uma resposta 400 do tipo <c>ValidationProblemDetails</c>,
+/// mantendo o comportamento manual existente em todos os controllers.
 /// </summary>
 public sealed class ValidationActionFilter : IAsyncActionFilter
 {
@@ -96,11 +95,11 @@ public sealed class ValidationActionFilter : IAsyncActionFilter
         object instance,
         CancellationToken cancellationToken)
     {
-        // Resolve the closed-generic IValidator<T>.ValidateAsync(T, CancellationToken)
-        // method by looking it up on the interface type, not on the concrete class.
-        // Looking on the concrete class with signature (object, CancellationToken)
-        // would silently return null and throw — IValidator<T> declares (T, ct),
-        // not (object, ct), and T is the runtime argument type.
+        // Resolve o método genérico fechado IValidator<T>.ValidateAsync(T, CancellationToken)
+        // procurando-o no tipo da interface, não na classe concreta.
+        // Procurar na classe concreta pela assinatura (object, CancellationToken)
+        // retornaria null silenciosamente e causaria uma exceção — IValidator<T> declara
+        // (T, ct), não (object, ct), e T é o tipo do argumento em tempo de execução.
         var validatorInterface = typeof(IValidator<>).MakeGenericType(argumentType);
         var method = validatorInterface.GetMethod(
             nameof(IValidator<object>.ValidateAsync),
@@ -115,10 +114,9 @@ public sealed class ValidationActionFilter : IAsyncActionFilter
 
     private static bool IsFrameworkType(Type type)
     {
-        // Skip primitive/framework types we never want to validate: route ids,
-        // CancellationToken, FormFile streams, etc. Anything without a registered
-        // IValidator<T> is already ignored; this is a fast-path to avoid reflection
-        // for the most common cases.
+        // Ignora tipos primitivos/do framework que não devem ser validados: IDs de rota,
+        // CancellationToken, streams FormFile etc. Tipos sem um IValidator<T> registrado
+        // já são ignorados; este atalho evita reflexão nos casos mais comuns.
         if (type.IsPrimitive || type.IsEnum)
         {
             return true;

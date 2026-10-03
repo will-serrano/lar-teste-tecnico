@@ -124,8 +124,8 @@ public class SearchPersonsHandlerTests
     }
 
     /// <summary>
-    /// Generates a mathematically valid CPF whose first nine digits encode the seed.
-    /// Used to produce many distinct CPFs without listing them by hand.
+    /// Gera um CPF matematicamente válido cujos nove primeiros dígitos codificam a semente.
+    /// Usado para produzir vários CPFs distintos sem precisar listá-los manualmente.
     /// </summary>
     private static string GenerateValidCpf(int index)
     {

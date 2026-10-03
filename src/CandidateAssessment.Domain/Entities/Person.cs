@@ -5,8 +5,8 @@ using CandidateAssessment.Domain.ValueObjects;
 namespace CandidateAssessment.Domain.Entities;
 
 /// <summary>
-/// Person aggregate root.
-/// Supports soft delete (logical) and restoration.
+/// Raiz do agregado Person.
+/// Dá suporte à exclusão lógica e à restauração.
 /// </summary>
 public sealed class Person
 {
@@ -35,7 +35,7 @@ public sealed class Person
 
     public IReadOnlyCollection<Phone> Phones => _phones.AsReadOnly();
 
-    // EF Core parameterless constructor.
+    // Construtor sem parâmetros exigido pelo EF Core.
     private Person()
     {
     }
@@ -150,8 +150,8 @@ public sealed class Person
     }
 
     /// <summary>
-    /// Trims and collapses whitespace characters into a single space.
-    /// E.g. "João   da   Silva" becomes "João da Silva".
+    /// Remove espaços em excesso e substitui sequências de espaços por um único espaço.
+    /// Por exemplo, "João   da   Silva" passa a ser "João da Silva".
     /// </summary>
     private static string CollapseInternalSpaces(string input)
         => string.Join(" ", input.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));

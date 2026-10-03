@@ -1,9 +1,9 @@
 namespace CandidateAssessment.Application.Persons.Search;
 
 /// <summary>
-/// Query for searching active persons.
-/// Filters are optional and combine with AND.
-/// Pagination defaults are applied by the handler.
+/// Consulta para pesquisar pessoas ativas.
+/// Os filtros são opcionais e combinados com AND.
+/// O handler aplica os valores padrão de paginação.
 /// </summary>
 public sealed record SearchPersonsQuery(
     string? Name,

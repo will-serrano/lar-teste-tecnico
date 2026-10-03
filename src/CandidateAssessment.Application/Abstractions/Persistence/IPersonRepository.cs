@@ -3,34 +3,34 @@ using CandidateAssessment.Domain.Entities;
 namespace CandidateAssessment.Application.Abstractions.Persistence;
 
 /// <summary>
-/// Repository contract for the Person aggregate.
-/// Methods intentionally cover only the use cases required by the Application layer —
-/// no generic CRUD surface.
+/// Contrato de repositório para o agregado Person.
+/// Os métodos abrangem intencionalmente apenas os casos de uso necessários à camada Application —
+/// não há uma interface CRUD genérica.
 /// </summary>
 public interface IPersonRepository
 {
     /// <summary>
-    /// Returns an active person (i.e. not soft-deleted) by id, including phones.
-    /// Returns null when no active person matches.
+    /// Retorna uma pessoa ativa (isto é, não excluída logicamente) pelo ID, incluindo os telefones.
+    /// Retorna null quando não houver pessoa ativa correspondente.
     /// </summary>
     Task<Person?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Returns a person by id regardless of soft-delete state, including phones.
-    /// Used by Restore and GetDeleted flows.
+    /// Retorna uma pessoa pelo ID, independentemente do estado de exclusão lógica, incluindo os telefones.
+    /// Usado nos fluxos de restauração e consulta de excluídos.
     /// </summary>
     Task<Person?> GetByIdIncludingDeletedAsync(
         Guid id,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Returns true when the CPF is already registered for any person
-    /// (active or soft-deleted — CPFs remain reserved).
+    /// Retorna true quando o CPF já estiver registrado para qualquer pessoa
+    /// (ativa ou excluída logicamente — os CPFs permanecem reservados).
     /// </summary>
     Task<bool> CpfExistsAsync(string cpf, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Returns true when another person (excluding the supplied id) already owns the CPF.
+    /// Retorna true quando outra pessoa (exceto a pessoa com o ID informado) já possuir o CPF.
     /// </summary>
     Task<bool> CpfExistsForOtherPersonAsync(
         string cpf,
@@ -38,8 +38,8 @@ public interface IPersonRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Searches active persons with optional filters and pagination, ordered by
-    /// Name asc, Id asc for stable pagination.
+    /// Pesquisa pessoas ativas com filtros opcionais e paginação, ordenadas por
+    /// Name ascendente e Id ascendente para garantir paginação estável.
     /// </summary>
     Task<IReadOnlyList<Person>> SearchAsync(
         string? nameContains,
@@ -49,7 +49,7 @@ public interface IPersonRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Returns the total number of active persons matching the optional filters.
+    /// Retorna o total de pessoas ativas que correspondem aos filtros opcionais.
     /// </summary>
     Task<int> CountSearchAsync(
         string? nameContains,
@@ -57,7 +57,7 @@ public interface IPersonRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Returns soft-deleted persons ordered by DeletedAtUtc desc with pagination.
+    /// Retorna pessoas excluídas logicamente, ordenadas por DeletedAtUtc decrescente e paginadas.
     /// </summary>
     Task<IReadOnlyList<Person>> GetDeletedAsync(
         int page,
@@ -65,12 +65,12 @@ public interface IPersonRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Returns the total number of soft-deleted persons.
+    /// Retorna o total de pessoas excluídas logicamente.
     /// </summary>
     Task<int> CountDeletedAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Adds a new person. Caller is responsible for SaveChanges via IUnitOfWork.
+    /// Adiciona uma nova pessoa. Quem chama é responsável por executar SaveChanges via IUnitOfWork.
     /// </summary>
     Task AddAsync(Person person, CancellationToken cancellationToken = default);
 }

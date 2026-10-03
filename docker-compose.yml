@@ -10,9 +10,10 @@ services:
       - "8080:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      # Override these in production deployments via real secrets (Docker secrets,
-      # environment injection from CI, etc). The values here are the documented
-      # demo credentials that match the seed users in appsettings.json.
+      # Substitua estes valores em implantações de produção por segredos reais
+      # (Docker secrets, variáveis de ambiente injetadas pela CI etc.). Os valores abaixo
+      # são credenciais de demonstração documentadas, correspondentes aos usuários iniciais
+      # definidos em appsettings.json.
       Jwt__Issuer: "CandidateAssessment"
       Jwt__Audience: "CandidateAssessment.Api"
       Jwt__SigningKey: "REPLACE-WITH-AT-LEAST-32-BYTES-SECRET-IN-PRODUCTION"
@@ -23,7 +24,7 @@ services:
       SeedUsers__User__Username: "user"
       SeedUsers__User__Password: "User@123"
     volumes:
-      # Persist SQLite and rolling logs across container restarts.
+      # Mantém o SQLite e os logs rotativos entre reinicializações do contêiner.
       - candidate-data:/app/data
       - candidate-logs:/app/logs
     healthcheck:

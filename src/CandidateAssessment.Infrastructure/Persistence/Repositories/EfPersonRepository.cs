@@ -107,8 +107,8 @@ public class EfPersonRepository : IPersonRepository
             }
             else
             {
-                // Filter that can never match — keeps semantics predictable when caller
-                // passes malformed CPF at the repository layer.
+                // Filtro que nunca encontra correspondências — mantém o comportamento previsível
+                // quando quem chama fornece um CPF malformado à camada do repositório.
                 query = query.Where(p => false);
             }
         }

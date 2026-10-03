@@ -1,8 +1,8 @@
-# Remove the line below if you want to inherit .editorconfig settings from higher directories
+# Remova a linha abaixo se quiser herdar as configurações .editorconfig dos diretórios superiores.
 root = true
 
 ###############################################################################
-# All files
+# Todos os arquivos
 ###############################################################################
 [*]
 charset = utf-8
@@ -31,42 +31,42 @@ indent_size = 2
 trim_trailing_whitespace = false
 
 ###############################################################################
-# Solution files
+# Arquivos de solução
 ###############################################################################
 [*.{sln,slnx}]
 indent_style = tab
 
 ###############################################################################
-# C# files
+# Arquivos C#
 ###############################################################################
 [*.cs]
 
-#### .NET Coding Conventions ####
+#### Convenções de código .NET ####
 
-# Organize usings
+# Organiza as diretivas using
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
 
-# this. and Me. preferences
+# Preferências para this. e Me.
 dotnet_style_qualification_for_field = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_event = false:suggestion
 
-# Language keywords vs BCL types preferences
+# Preferências entre palavras-chave da linguagem e tipos da BCL
 dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
 dotnet_style_predefined_type_for_member_access = true:suggestion
 
-# Parentheses preferences
+# Preferências para parênteses
 dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:silent
 dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:silent
 dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:silent
 dotnet_style_parentheses_in_other_operators = never_if_unnecessary:silent
 
-# Modifier preferences
+# Preferências para modificadores
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
 
-# Expression-level preferences
+# Preferências no nível de expressões
 dotnet_style_object_initializer = true:suggestion
 dotnet_style_collection_initializer = true:suggestion
 dotnet_style_explicit_tuple_names = true:suggestion
@@ -79,26 +79,26 @@ dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_prefer_compound_assignment = true:suggestion
 dotnet_style_prefer_simplified_interpolation = true:suggestion
 
-# Null-checking preferences
+# Preferências para verificações de null
 dotnet_style_coalesce_expression = true:suggestion
 dotnet_style_null_propagation = true:suggestion
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
 
-# File header preferences
+# Preferências para cabeçalhos de arquivo
 file_header_template = unset
 
-# Unnecessary code rules
+# Regras para código desnecessário
 dotnet_code_quality_unused_parameters = all:suggestion
 dotnet_remove_unnecessary_suppression_exclusions = none
 
-#### C# Coding Conventions ####
+#### Convenções de código C# ####
 
-# var preferences
+# Preferências para var
 csharp_style_var_for_built_in_types = false:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
 csharp_style_var_elsewhere = false:suggestion
 
-# Expression-bodied members
+# Membros com corpo de expressão
 csharp_style_expression_bodied_methods = false:silent
 csharp_style_expression_bodied_constructors = false:silent
 csharp_style_expression_bodied_operators = false:silent
@@ -108,25 +108,25 @@ csharp_style_expression_bodied_accessors = true:suggestion
 csharp_style_expression_bodied_lambdas = true:suggestion
 csharp_style_expression_bodied_local_functions = false:silent
 
-# Pattern matching preferences
+# Preferências para correspondência de padrões
 csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
 csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
 csharp_style_prefer_switch_expression = true:suggestion
 csharp_style_prefer_pattern_matching = true:silent
 csharp_style_prefer_not_pattern = true:suggestion
 
-# Null-checking preferences
+# Preferências para verificações de null
 csharp_style_throw_expression = true:suggestion
 csharp_style_conditional_delegate_call = true:suggestion
 
-# Modifier preferences
+# Preferências para modificadores
 csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
 
-# Code-block preferences
+# Preferências para blocos de código
 csharp_prefer_braces = true:suggestion
 csharp_prefer_simple_using_statement = true:suggestion
 
-# Expression-level preferences
+# Preferências no nível de expressões
 csharp_prefer_simple_default_expression = true:suggestion
 csharp_style_prefer_local_over_anonymous_function = true:suggestion
 csharp_style_prefer_index_operator = true:suggestion
@@ -137,15 +137,15 @@ csharp_style_deconstructed_variable_declaration = true:suggestion
 csharp_style_unused_value_assignment_preference = discard_variable:suggestion
 csharp_style_unused_value_expression_statement_preference = discard_variable:silent
 
-# 'using' directive preferences
+# Preferências para diretivas 'using'
 csharp_using_directive_placement = outside_namespace:suggestion
 
-# Namespace preferences
+# Preferências para namespaces
 csharp_style_namespace_declarations = file_scoped:suggestion
 
-#### C# Formatting Rules ####
+#### Regras de formatação C# ####
 
-# New line preferences
+# Preferências para quebras de linha
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
 csharp_new_line_before_catch = true
@@ -154,7 +154,7 @@ csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_between_query_expression_clauses = true
 
-# Indentation preferences
+# Preferências para indentação
 csharp_indent_case_contents = true
 csharp_indent_switch_labels = true
 csharp_indent_labels = one_less_than_current
@@ -162,7 +162,7 @@ csharp_indent_block_contents = true
 csharp_indent_braces = false
 csharp_indent_case_contents_when_block = true
 
-# Space preferences
+# Preferências para espaços
 csharp_space_after_cast = false
 csharp_space_after_keywords_in_control_flow_statements = true
 csharp_space_between_parentheses = false
@@ -186,15 +186,15 @@ csharp_space_before_open_square_brackets = false
 csharp_space_between_empty_square_brackets = false
 csharp_space_between_square_brackets = false
 
-# Wrapping preferences
+# Preferências para quebra de linhas
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
 
 ###############################################################################
-# Naming conventions
+# Convenções de nomenclatura
 ###############################################################################
 
-# Interfaces must begin with I
+# Interfaces devem começar com I
 dotnet_naming_rule.interface_should_begin_with_i.severity = suggestion
 dotnet_naming_rule.interface_should_begin_with_i.symbols = interface
 dotnet_naming_rule.interface_should_begin_with_i.style = begins_with_i
@@ -205,7 +205,7 @@ dotnet_naming_symbols.interface.applicable_accessibilities = public, internal, p
 dotnet_naming_style.begins_with_i.required_prefix = I
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
-# Types should be PascalCase
+# Tipos devem usar PascalCase
 dotnet_naming_rule.types_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.types_should_be_pascal_case.symbols = types
 dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case
@@ -213,7 +213,7 @@ dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case
 dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum
 dotnet_naming_symbols.types.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
 
-# Non-field members should be PascalCase
+# Membros que não são campos devem usar PascalCase
 dotnet_naming_rule.non_field_members_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols = non_field_members
 dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
@@ -221,7 +221,7 @@ dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
 dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, method
 dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
 
-# Private fields should be _camelCase
+# Campos privados devem usar _camelCase
 dotnet_naming_rule.private_fields_should_be_camel_case.severity = suggestion
 dotnet_naming_rule.private_fields_should_be_camel_case.symbols = private_fields
 dotnet_naming_rule.private_fields_should_be_camel_case.style = underscore_camel_case
@@ -232,7 +232,7 @@ dotnet_naming_symbols.private_fields.applicable_accessibilities = private, priva
 dotnet_naming_style.underscore_camel_case.required_prefix = _
 dotnet_naming_style.underscore_camel_case.capitalization = camel_case
 
-# Constants should be PascalCase
+# Constantes devem usar PascalCase
 dotnet_naming_rule.constants_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.constants_should_be_pascal_case.symbols = constants
 dotnet_naming_rule.constants_should_be_pascal_case.style = pascal_case
@@ -240,16 +240,15 @@ dotnet_naming_rule.constants_should_be_pascal_case.style = pascal_case
 dotnet_naming_symbols.constants.applicable_kinds = field, local
 dotnet_naming_symbols.constants.required_modifiers = const
 
-# General naming style
+# Estilo geral de nomenclatura
 dotnet_naming_style.pascal_case.capitalization = pascal_case
 
 ###############################################################################
-# EF Core migrations
+# Migrações do EF Core
 #
-# Generated by `dotnet ef migrations add` and regenerated on schema changes.
-# Inline `new[] { ... }` literals in migration bodies trigger CA1861; refactoring
-# them by hand is wasted effort that would be overwritten on the next
-# regeneration.
+# Geradas por `dotnet ef migrations add` e recriadas quando o esquema é alterado.
+# Literais `new[] { ... }` em linha nos corpos das migrações acionam CA1861; refatorá-los
+# manualmente é trabalho perdido, pois a alteração será substituída na próxima geração.
 ###############################################################################
 [**/Migrations/*.cs]
 dotnet_diagnostic.CA1861.severity = none

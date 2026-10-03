@@ -61,11 +61,11 @@ UpdatedAtUtc  DateTime  // atualizado em qualquer mutação
 ## Verificação
 
 ```bash
-# Soft delete
+# Exclusão lógica
 curl -X DELETE -H "Authorization: Bearer $TOKEN" \
     http://localhost:8080/api/v1/persons/$ID
 
-# GET normal -> 404
+# GET padrão -> 404
 curl -H "Authorization: Bearer $TOKEN" \
     http://localhost:8080/api/v1/persons/$ID
 
@@ -73,7 +73,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 curl -H "Authorization: Bearer $ADMIN_TOKEN" \
     http://localhost:8080/api/v1/persons/deleted
 
-# Restore
+# Restaurar
 curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" \
     http://localhost:8080/api/v1/persons/$ID/restore
 ```
