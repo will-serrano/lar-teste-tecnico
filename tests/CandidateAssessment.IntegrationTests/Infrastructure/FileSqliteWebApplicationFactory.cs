@@ -1,7 +1,7 @@
 using CandidateAssessment.Application.Abstractions.Idempotency;
 using CandidateAssessment.Application.Abstractions.Time;
-using CandidateAssessment.Infrastructure.Idempotency;
 using CandidateAssessment.Infrastructure.Diagnostics;
+using CandidateAssessment.Infrastructure.Idempotency;
 using CandidateAssessment.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;

@@ -20,7 +20,7 @@ namespace CandidateAssessment.IntegrationTests;
 [Collection(IntegrationTestCollection.Name)]
 public sealed class IdempotencyApiTests
 {
-    private static readonly string[] MultipleKeys = ["one", "two"];
+    private static readonly string[] MultipleKeys = { "one", "two" };
 
     [Fact]
     public async Task Create_ShouldReplayCanonicalJsonAndLocation_AfterHostRestart()
@@ -127,9 +127,10 @@ public sealed class IdempotencyApiTests
         using var second = factory.CreateClient();
         using (var scope = factory.Services.CreateScope())
         {
-            var token = scope.ServiceProvider.GetRequiredService<ITokenService>().IssueToken([
+            var token = scope.ServiceProvider.GetRequiredService<ITokenService>().IssueToken(new[]
+            {
                 new Claim(ClaimTypes.NameIdentifier, "another-admin"), new Claim(ClaimTypes.Role, ApplicationRoles.Admin),
-            ]);
+            });
             second.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
         }
 

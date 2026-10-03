@@ -26,12 +26,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup SDK and assessment runtime
+      - name: Setup .NET 6 SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            10.0.x
-            6.0.x
+          dotnet-version: 6.0.428
 
       - name: Cache NuGet packages
         uses: actions/cache@v3
@@ -46,11 +44,7 @@ jobs:
         run: dotnet restore CandidateAssessment.sln
 
       - name: Build
-        run: dotnet build CandidateAssessment.sln -c Release --no-restore /warnaserror:NETSDK1138
-        # NETSDK1138 (framework fora de suporte) é tratado como erro na CI,
-        # embora o projeto exija net6.0. Isso impede a atualização acidental
-        # para um destino sem suporte e preserva o compromisso documentado
-        # do projeto com o .NET 6.
+        run: dotnet build CandidateAssessment.sln -c Release --no-restore -warnaserror
 
       # ---- Verificação de formatação -------------------------------------
       - name: Verify formatting
@@ -79,15 +73,17 @@ jobs:
         run: |
           $results = Get-ChildItem -Path ./coverage -Recurse -Filter coverage.cobertura.xml
           if (-not $results) { Write-Error "No coverage reports produced."; exit 1 }
-          $totalLines = 0; $coveredLines = 0
           foreach ($file in $results) {
               [xml]$xml = Get-Content $file.FullName -Raw
+              $totalLines = [int]$xml.coverage.'lines-valid'
+              $coveredLines = [int]$xml.coverage.'lines-covered'
+              if ($totalLines -le 0) { Write-Error "Coverage report has no instrumented lines: $($file.FullName)"; exit 1 }
               $pkg = $xml.coverage.packages.package
               Write-Host ("## $($file.FullName)")
+              Write-Host ("  Lines: {0}/{1} ({2:P1})" -f $coveredLines, $totalLines, ($coveredLines / $totalLines))
               foreach ($p in @($pkg)) {
                   $lr = [double]$p.'line-rate'
                   Write-Host ("  - {0,-32} line {1:P1}" -f $p.name, $lr)
-                  $totalLines  += [int]$p.'lines'.line | Measure-Object | Select-Object -ExpandProperty Count
               }
           }
           Write-Host "`nCoverage collected. Reports stored under ./coverage/."

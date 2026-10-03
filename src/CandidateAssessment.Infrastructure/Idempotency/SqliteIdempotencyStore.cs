@@ -72,7 +72,7 @@ public sealed class SqliteIdempotencyStore : IIdempotencyStore
 
             record.Fingerprint = fingerprint;
             record.StatusCode = 0;
-            record.Body = [];
+            record.Body = Array.Empty<byte>();
             record.ContentType = null;
             record.Location = null;
             record.CreatedAtUtc = _clock.UtcNow;

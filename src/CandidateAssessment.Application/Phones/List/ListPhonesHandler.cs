@@ -25,8 +25,9 @@ public sealed class ListPhonesHandler
                 "PersonNotFound",
                 $"Person with id '{query.PersonId}' was not found.");
         operation.Complete();
-        return [.. person.Phones
+        return person.Phones
             .OrderBy(p => p.Type)
-            .ThenBy(p => p.Number)];
+            .ThenBy(p => p.Number)
+            .ToArray();
     }
 }

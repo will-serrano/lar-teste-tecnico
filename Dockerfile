@@ -4,12 +4,12 @@
 # Stage 1: restore + publish
 # Builds a self-contained output ready to be copied into the runtime image.
 # ----------------------------------------------------------------------------
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0.428-1 AS build
 WORKDIR /src
 
 # Copy NuGet manifest files first so Docker can cache the restore layer
 # independently from source changes.
-COPY CandidateAssessment.sln ./
+COPY CandidateAssessment.sln global.json ./
 COPY Directory.Build.props Directory.Build.targets ./
 COPY src/CandidateAssessment.Domain/CandidateAssessment.Domain.csproj             src/CandidateAssessment.Domain/
 COPY src/CandidateAssessment.Application/CandidateAssessment.Application.csproj   src/CandidateAssessment.Application/

@@ -61,7 +61,30 @@ Validação adicional em 2026-10-02, preservando a execução histórica acima:
 - [x] Pipeline real Collector → Jaeger/Prometheus/Grafana: trace conhecido com 17 spans, outcomes executed/replayed e 10 painéis provisionados.
 - [x] Collector indisponível: escrita/replay e readiness continuam funcionando; falha de exportação é logada sem payload sensível.
 
-O build usa SDK 10 para a sintaxe já adotada, mantendo `net6.0` e runtime 6.
-Os arquivos alterados passam na verificação de whitespace. O format check
-global também aponta faltas históricas de newline final em arquivos não
-alterados; elas não foram incluídas nesta evolução.
+O build usa SDK .NET 6.0.428, fixado em `global.json`, com C# 10,
+mantendo `net6.0` e runtime 6. Docker e CI usam o mesmo SDK.
+Os finais de linha, newline final e imports foram normalizados.
+O gate completo de formatação e analisadores foi aprovado com o SDK 6.
+
+## Compatibilidade com o SDK .NET 6
+
+Validação em 2026-10-03:
+
+- [x] `dotnet --version`: SDK 6.0.428, selecionado por `global.json`.
+- [x] Seis projetos com `net6.0`, referências válidas e inclusão em `CandidateAssessment.sln`.
+- [x] `dotnet clean` seguido de `dotnet build CandidateAssessment.sln -c Release -warnaserror`: seis projetos compilados com C# 10, zero avisos e zero erros.
+- [x] 178 testes unitários e 106 de integração aprovados em Release, com as configurações de cobertura da CI.
+- [x] Tarefa `test` do VS Code: build Debug e os mesmos 284 testes aprovados.
+- [x] `dotnet format CandidateAssessment.sln --verify-no-changes`: gate completo aprovado.
+- [x] Resumo real da CI executado sobre os dois relatórios Cobertura, com contadores de linhas válidas/cobertas; ausência de relatórios rejeitada com código 1.
+- [x] `dotnet-ef` 6.0.36 restaurado e as duas migrations listadas sem conexão com o banco.
+- [x] Build Docker com SDK 6.0.428; container com runtime 6.0.36, usuário não root, health/readiness/liveness `Healthy` e Docker HEALTHCHECK `healthy`.
+- [x] Solução XML removida; VS Code configurado para abrir `CandidateAssessment.sln`.
+- [ ] Descoberta no Test Explorer após recarregar a janela do VS Code.
+
+O diagnóstico CA1050 é suprimido somente na classe parcial global `Program`,
+necessária ao hosting e ao `WebApplicationFactory<Program>`. Os demais
+analisadores continuam habilitados.
+
+As etapas locais foram verificadas; esta validação não representa uma execução
+remota do GitHub Actions nem uma afirmação de cobertura de código de 100%.

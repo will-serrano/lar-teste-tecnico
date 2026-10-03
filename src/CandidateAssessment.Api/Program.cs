@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using CandidateAssessment.Api;
 using CandidateAssessment.Api.Configuration;
 using CandidateAssessment.Api.Diagnostics;
@@ -140,6 +141,10 @@ finally
 }
 
 // Necessário para usar WebApplicationFactory<Program> nos testes.
+[SuppressMessage(
+    "Design",
+    "CA1050:Declare types in namespaces",
+    Justification = "Top-level hosting and WebApplicationFactory<Program> require the global entry point.")]
 public partial class Program
 {
 }

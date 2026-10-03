@@ -83,8 +83,8 @@ public sealed record class Cpf
     // Os arrays de pesos são tabelas imutáveis de consulta para o algoritmo de
     // dígitos verificadores do CPF. Mantê-los em campos static readonly evita alocar
     // um novo array a cada validação (CA1861).
-    private static readonly int[] _firstCheckDigitWeights = [10, 9, 8, 7, 6, 5, 4, 3, 2];
-    private static readonly int[] _secondCheckDigitWeights = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
+    private static readonly int[] _firstCheckDigitWeights = { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+    private static readonly int[] _secondCheckDigitWeights = { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
 
     private static bool HasValidCheckDigits(string digits)
     {

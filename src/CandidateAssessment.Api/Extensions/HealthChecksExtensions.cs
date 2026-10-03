@@ -6,7 +6,7 @@ internal static class HealthChecksExtensions
 {
     // Armazenado em um array static readonly para que o registro das verificações de
     // integridade não aloque um novo array de tags a cada inicialização do host (CA1861).
-    private static readonly string[] _databaseHealthTags = ["ready", "db"];
+    private static readonly string[] _databaseHealthTags = { "ready", "db" };
 
     /// <summary>
     /// Registra verificações de atividade e prontidão. A verificação de prontidão confirma

@@ -53,7 +53,7 @@ internal static class PersonMappings
 
         return new PagedResponse<PersonResponse>
         {
-            Items = [.. result.Items.Select(map)],
+            Items = result.Items.Select(map).ToArray(),
             Page = result.Page,
             PageSize = result.PageSize,
             TotalItems = result.TotalItems,

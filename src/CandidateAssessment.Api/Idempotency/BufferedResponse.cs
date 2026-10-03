@@ -6,7 +6,7 @@ namespace CandidateAssessment.Api.Idempotency;
 internal sealed class BufferedResponse : IHttpResponseFeature, IHttpResponseBodyFeature, IAsyncDisposable
 {
     private readonly IHttpResponseFeature _original;
-    private readonly List<(Func<object, Task> Callback, object State)> _starting = [];
+    private readonly List<(Func<object, Task> Callback, object State)> _starting = new();
     private readonly LimitedStream _stream;
     private readonly PipeWriter _writer;
     private bool _completed;

@@ -250,7 +250,7 @@ namespace CandidateAssessment.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Phones_PersonId_Number",
                 table: "Phones",
-                columns: ["PersonId", "Number"],
+                columns: new[] { "PersonId", "Number" },
                 unique: true);
         }
 

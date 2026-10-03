@@ -1,6 +1,6 @@
 using CandidateAssessment.Api.Configuration;
-using CandidateAssessment.Api.Idempotency;
 using CandidateAssessment.Api.Diagnostics;
+using CandidateAssessment.Api.Idempotency;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CandidateAssessment.Api.Extensions;

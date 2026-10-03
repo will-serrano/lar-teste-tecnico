@@ -31,7 +31,7 @@ public sealed class Person
 
     public DateTime? RestoredAtUtc { get; private set; }
 
-    private readonly List<Phone> _phones = [];
+    private readonly List<Phone> _phones = new();
 
     public IReadOnlyCollection<Phone> Phones => _phones.AsReadOnly();
 

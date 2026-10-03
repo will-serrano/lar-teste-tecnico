@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
-using CandidateAssessment.Application.Exceptions;
 using CandidateAssessment.Api.Diagnostics;
+using CandidateAssessment.Application.Exceptions;
 using CandidateAssessment.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;

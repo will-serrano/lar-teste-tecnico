@@ -10,7 +10,7 @@ public sealed class IdempotencyRecord
 
     public int StatusCode { get; set; }
 
-    public byte[] Body { get; set; } = [];
+    public byte[] Body { get; set; } = Array.Empty<byte>();
 
     public string? ContentType { get; set; }
 

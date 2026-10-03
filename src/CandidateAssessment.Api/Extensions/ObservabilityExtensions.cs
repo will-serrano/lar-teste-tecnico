@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using CandidateAssessment.Api.Configuration;
 using CandidateAssessment.Api.Diagnostics;
 using CandidateAssessment.Application.Diagnostics;

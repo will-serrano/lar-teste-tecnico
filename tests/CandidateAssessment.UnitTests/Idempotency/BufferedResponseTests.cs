@@ -8,7 +8,7 @@ namespace CandidateAssessment.UnitTests.Idempotency;
 
 public sealed class BufferedResponseTests
 {
-    private static readonly int[] ExpectedCallbackOrder = [2, 1];
+    private static readonly int[] ExpectedCallbackOrder = { 2, 1 };
 
     [Fact]
     public async Task StartAndComplete_ShouldKeepOriginalResponseUnstarted_AndCapturePipeWriter()

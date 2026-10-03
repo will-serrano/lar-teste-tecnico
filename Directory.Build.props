@@ -22,13 +22,13 @@
   -->
 
   <PropertyGroup>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningsNotAsErrors>$(WarningsNotAsErrors)</WarningsNotAsErrors>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisLevel>6.0</AnalysisLevel>
     <AnalysisMode>Recommended</AnalysisMode>
     <NoWarn>$(NoWarn);NETSDK1138;CA1014;CA1848;CA1873;CA1305</NoWarn>
   </PropertyGroup>

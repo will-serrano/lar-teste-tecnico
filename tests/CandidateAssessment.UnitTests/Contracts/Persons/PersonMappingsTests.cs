@@ -75,11 +75,11 @@ public class PersonMappingsTests
     public void Should_MapItemsAndPagination_When_ResultHasItems(bool useCache)
     {
         var person = CreatePerson();
-        var result = new PagedResult<Person>([person], 2, 1, 3);
+        var result = new PagedResult<Person>(new[] { person }, 2, 1, 3);
 
         var response = useCache
             ? new PagedResult<CachedPerson>(
-                [CachedPerson.From(person)], 2, 1, 3)
+                new[] { CachedPerson.From(person) }, 2, 1, 3)
                 .ToResponse(cached => cached.ToResponse())
             : result.ToResponse(item => item.ToResponse());
 

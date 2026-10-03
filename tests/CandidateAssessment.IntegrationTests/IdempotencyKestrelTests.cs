@@ -1,6 +1,6 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Security.Claims;
-using System.Collections.Concurrent;
 using CandidateAssessment.Api.Configuration;
 using CandidateAssessment.Api.Idempotency;
 using CandidateAssessment.Api.Middleware;
@@ -59,7 +59,7 @@ public sealed class IdempotencyKestrelTests
                 app.Use((context, next) =>
                 {
                     context.User = new ClaimsPrincipal(new ClaimsIdentity(
-                        [new Claim(ClaimTypes.NameIdentifier, "header-test")], "test"));
+                        new[] { new Claim(ClaimTypes.NameIdentifier, "header-test") }, "test"));
                     return next();
                 });
                 app.UseMiddleware<IdempotencyMiddleware>();

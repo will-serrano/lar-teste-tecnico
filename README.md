@@ -25,10 +25,19 @@ respeitada, e preocupações transversais isoladas.
 
 | Componente | Versão |
 |---|---|
-| .NET SDK | **10.0.x** para compilar a sintaxe atual; runtime **6.0.x** para executar o alvo `net6.0` |
+| .NET SDK | **6.0.428**, fixado em `global.json`; C# **10.0** e alvo `net6.0` |
 | Sistema operacional | Linux, macOS ou Windows |
 | Docker | opcional (para execução containerizada) |
 | dotnet-ef | instalado via `dotnet tool restore` (6.0.36) |
+
+Instale o SDK .NET 6 (somente o runtime não é suficiente). Na raiz do
+repositório, `dotnet --version` deve retornar `6.0.428`. O `global.json`
+impede a seleção automática de um SDK de outra versão; Docker e CI usam
+o mesmo SDK.
+
+Após instalar o SDK ou trocar a solução, execute `Developer: Reload Window`
+no VS Code para recarregar o C# Dev Kit e o Test Explorer. A solução padrão
+é `CandidateAssessment.sln`; a tarefa `test` compila e testa todos os projetos.
 
 ## Stack
 
@@ -196,7 +205,7 @@ dotnet ef database update \
 > A CLI permanece o padrão. O Compose demonstrativo habilita explicitamente
 > `Database__ApplyMigrationsOnStartup=true` para um volume novo ou atualizado;
 > fora dele essa opção é desabilitada. O alvo e a imagem de execução continuam
-> .NET 6; SDK 10 é usado somente para compilar a sintaxe já adotada no projeto.
+> .NET 6; a compilação também usa o SDK 6, com C# 10.
 
 ## Credenciais de demonstração
 
@@ -432,11 +441,10 @@ A rota `/health/ready` está fora do rate limiting.
 Pipeline em `.github/workflows/ci.yml`:
 
 1. Checkout
-2. Setup SDK 10 e runtime .NET 6 (o target continua `net6.0`)
+2. Setup SDK .NET 6.0.428, também fixado em `global.json` (target `net6.0`)
 3. Cache NuGet
 4. `dotnet restore`
-5. `dotnet build -c Release` (com `NETSDK1138` tratado como erro para
-   evitar mudanças acidentais de target)
+5. `dotnet build -c Release -warnaserror` (avisos não suprimidos impedem o build)
 6. `dotnet format --verify-no-changes` (gate de formatação)
 7. Testes unitários + integração com cobertura (`coverlet.runsettings`)
 8. Resumo de cobertura (artefato)

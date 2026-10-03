@@ -62,7 +62,7 @@ internal sealed class FakePersonRepository : IPersonRepository
             }
             else
             {
-                query = [];
+                query = Enumerable.Empty<Person>();
             }
         }
 
@@ -72,7 +72,7 @@ internal sealed class FakePersonRepository : IPersonRepository
             .ToList();
 
         var skip = Math.Max(0, (page - 1) * pageSize);
-        return Task.FromResult<IReadOnlyList<Person>>([.. ordered.Skip(skip).Take(pageSize)]);
+        return Task.FromResult<IReadOnlyList<Person>>(ordered.Skip(skip).Take(pageSize).ToArray());
     }
 
     public Task<int> CountSearchAsync(
@@ -97,7 +97,7 @@ internal sealed class FakePersonRepository : IPersonRepository
             }
             else
             {
-                query = [];
+                query = Enumerable.Empty<Person>();
             }
         }
 
@@ -116,7 +116,7 @@ internal sealed class FakePersonRepository : IPersonRepository
             .ToList();
 
         var skip = Math.Max(0, (page - 1) * pageSize);
-        return Task.FromResult<IReadOnlyList<Person>>([.. deleted.Skip(skip).Take(pageSize)]);
+        return Task.FromResult<IReadOnlyList<Person>>(deleted.Skip(skip).Take(pageSize).ToArray());
     }
 
     public Task<int> CountDeletedAsync(CancellationToken cancellationToken = default)

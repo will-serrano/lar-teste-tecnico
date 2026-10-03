@@ -140,7 +140,7 @@ public class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Pr
 
         public string Username { get; init; } = default!;
 
-        public IReadOnlyList<string> Roles { get; init; } = [];
+        public IReadOnlyList<string> Roles { get; init; } = Array.Empty<string>();
     }
 
     private static void RemoveDbContextRegistrations(IServiceCollection services)

@@ -141,7 +141,7 @@ public class AuthApiTests
             digits[i] = (char)('0' + (n % 10));
         }
 
-        int[] weights1 = [10, 9, 8, 7, 6, 5, 4, 3, 2];
+        int[] weights1 = { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
         var sum1 = 0;
         for (var i = 0; i < 9; i++)
         {
@@ -151,7 +151,7 @@ public class AuthApiTests
         var remainder1 = sum1 % 11;
         digits[9] = (char)('0' + (remainder1 < 2 ? 0 : 11 - remainder1));
 
-        int[] weights2 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
+        int[] weights2 = { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
         var sum2 = 0;
         for (var i = 0; i < 10; i++)
         {
@@ -172,6 +172,6 @@ public class AuthApiTests
 
         public string Username { get; init; } = default!;
 
-        public IReadOnlyList<string> Roles { get; init; } = [];
+        public IReadOnlyList<string> Roles { get; init; } = Array.Empty<string>();
     }
 }

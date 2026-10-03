@@ -88,7 +88,7 @@ public sealed class CachedPerson
 
     public DateTime? RestoredAtUtc { get; init; }
 
-    public IReadOnlyList<CachedPhone> Phones { get; init; } = [];
+    public IReadOnlyList<CachedPhone> Phones { get; init; } = Array.Empty<CachedPhone>();
 
     public static CachedPerson From(Person person)
     {
@@ -105,7 +105,7 @@ public sealed class CachedPerson
             UpdatedAtUtc = person.UpdatedAtUtc,
             DeletedAtUtc = person.DeletedAtUtc,
             RestoredAtUtc = person.RestoredAtUtc,
-            Phones = [.. person.Phones.Select(CachedPhone.From)],
+            Phones = person.Phones.Select(CachedPhone.From).ToArray(),
         };
     }
 }

@@ -9,7 +9,7 @@ namespace CandidateAssessment.UnitTests.Fakes;
 /// </summary>
 internal sealed class FakeCacheService : ICacheService
 {
-    private readonly Dictionary<string, object> _store = [];
+    private readonly Dictionary<string, object> _store = new();
 
     public int GetCount { get; private set; }
 
