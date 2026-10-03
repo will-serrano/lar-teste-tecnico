@@ -98,6 +98,49 @@ namespace CandidateAssessment.Infrastructure.Migrations
                     b.ToTable("Phones", (string)null);
                 });
 
+            modelBuilder.Entity("CandidateAssessment.Infrastructure.Idempotency.IdempotencyRecord", b =>
+                {
+                    b.Property<string>("ScopeHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("KeyHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Body")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Fingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(2048)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("StatusCode")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ScopeHash", "KeyHash");
+
+                    b.HasIndex("ExpiresAtUtc");
+
+                    b.ToTable("IdempotencyRecords", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")

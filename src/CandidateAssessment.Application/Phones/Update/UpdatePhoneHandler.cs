@@ -1,6 +1,7 @@
 using CandidateAssessment.Application.Abstractions.Caching;
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Application.Abstractions.Time;
+using CandidateAssessment.Application.Diagnostics;
 using CandidateAssessment.Application.Exceptions;
 using CandidateAssessment.Domain.ValueObjects;
 
@@ -33,6 +34,7 @@ public sealed class UpdatePhoneHandler
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
+        using var operation = ApplicationDiagnostics.StartOperation("phones.update");
 
         var person = await _personRepository.GetByIdAsync(command.PersonId, cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
@@ -65,5 +67,6 @@ public sealed class UpdatePhoneHandler
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         await _personCache.InvalidateAsync(command.PersonId, cancellationToken);
+        operation.Complete();
     }
 }

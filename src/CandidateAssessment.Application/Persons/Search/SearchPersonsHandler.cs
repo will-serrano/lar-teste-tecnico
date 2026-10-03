@@ -1,5 +1,6 @@
 using CandidateAssessment.Application.Abstractions.Pagination;
 using CandidateAssessment.Application.Abstractions.Persistence;
+using CandidateAssessment.Application.Diagnostics;
 using CandidateAssessment.Domain.Entities;
 
 namespace CandidateAssessment.Application.Persons.Search;
@@ -18,6 +19,7 @@ public sealed class SearchPersonsHandler
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);
+        using var operation = ApplicationDiagnostics.StartOperation("persons.search");
 
         var page = PaginationOptions.NormalizePage(query.Page);
         var pageSize = PaginationOptions.NormalizePageSize(query.PageSize);
@@ -33,6 +35,7 @@ public sealed class SearchPersonsHandler
             pageSize,
             cancellationToken);
 
+        operation.Complete();
         return new PagedResult<Person>(items, page, pageSize, totalItems);
     }
 }

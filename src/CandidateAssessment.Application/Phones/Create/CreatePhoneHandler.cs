@@ -1,6 +1,7 @@
 using CandidateAssessment.Application.Abstractions.Caching;
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Application.Abstractions.Time;
+using CandidateAssessment.Application.Diagnostics;
 using CandidateAssessment.Application.Exceptions;
 using CandidateAssessment.Domain.ValueObjects;
 
@@ -33,6 +34,7 @@ public sealed class CreatePhoneHandler
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
+        using var operation = ApplicationDiagnostics.StartOperation("phones.create");
 
         var person = await _personRepository.GetByIdAsync(command.PersonId, cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
@@ -57,6 +59,7 @@ public sealed class CreatePhoneHandler
         // Alterações nos telefones modificam a projeção da pessoa armazenada em cache.
         await _personCache.InvalidateAsync(command.PersonId, cancellationToken);
 
+        operation.Complete();
         return phone.Id;
     }
 }

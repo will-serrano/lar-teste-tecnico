@@ -1,5 +1,6 @@
 using CandidateAssessment.Application.Abstractions.Caching;
 using CandidateAssessment.Application.Abstractions.Persistence;
+using CandidateAssessment.Application.Diagnostics;
 using CandidateAssessment.Application.Exceptions;
 using CandidateAssessment.Domain.Entities;
 using CandidateAssessment.Domain.Enums;
@@ -32,17 +33,19 @@ public sealed class GetPersonByIdHandler
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);
+        using var operation = ApplicationDiagnostics.StartOperation("persons.get");
 
         var cacheKey = PersonCacheKeys.ForDetail(query.Id);
 
         var cached = await _cache.GetAsync<CachedPerson>(cacheKey, cancellationToken);
         if (cached is not null)
         {
-            _logger.LogDebug("Person cache HIT for {PersonId}", query.Id);
+            _logger.LogDebug("Person cache HIT");
+            operation.Complete();
             return cached;
         }
 
-        _logger.LogDebug("Person cache MISS for {PersonId}", query.Id);
+        _logger.LogDebug("Person cache MISS");
 
         var person = await _personRepository.GetByIdAsync(query.Id, cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
@@ -54,6 +57,7 @@ public sealed class GetPersonByIdHandler
             _cacheOptions.PersonDetailAbsoluteExpiration,
             cancellationToken);
 
+        operation.Complete();
         return entry;
     }
 }

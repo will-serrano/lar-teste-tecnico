@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CandidateAssessment.Application.Abstractions.Authentication;
+using CandidateAssessment.Application.Diagnostics;
 using CandidateAssessment.Application.Exceptions;
 
 namespace CandidateAssessment.Application.Authentication.Login;
@@ -27,6 +28,7 @@ public sealed class LoginHandler
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
+        using var operation = ApplicationDiagnostics.StartOperation("auth.login");
 
         var user = await _userAuthentication.FindByNameAsync(command.Username, cancellationToken) ?? throw InvalidCredentials();
         var passwordValid = await _userAuthentication.CheckPasswordAsync(
@@ -52,6 +54,7 @@ public sealed class LoginHandler
         }
 
         var token = _tokenService.IssueToken(claims);
+        operation.Complete();
         return new LoginResult(token.Token, token.ExpiresAtUtc, user.UserName, roles);
     }
 

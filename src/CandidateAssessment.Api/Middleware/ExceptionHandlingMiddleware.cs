@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using CandidateAssessment.Application.Exceptions;
+using CandidateAssessment.Api.Diagnostics;
 using CandidateAssessment.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -35,8 +36,18 @@ public sealed class ExceptionHandlingMiddleware
         {
             await _next(context);
         }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            _logger.LogInformation("Request was aborted by the client.");
+        }
         catch (Exception ex)
         {
+            if (context.Response.HasStarted)
+            {
+                _logger.LogError(ex, "Request failed after the response started.");
+                throw;
+            }
+
             await HandleAsync(context, ex);
         }
     }
@@ -77,7 +88,7 @@ public sealed class ExceptionHandlingMiddleware
         HttpContext context,
         Exception exception)
     {
-        var traceId = Activity.Current?.Id ?? context.TraceIdentifier;
+        var traceId = RequestCorrelation.GetId(context);
 
         return exception switch
         {

@@ -19,6 +19,8 @@ services:
       Jwt__SigningKey: "REPLACE-WITH-AT-LEAST-32-BYTES-SECRET-IN-PRODUCTION"
       Jwt__ExpiresInMinutes: "60"
       ConnectionStrings__DefaultConnection: "Data Source=/app/data/candidateassessment.db"
+      # Opt-in for this single-instance demonstration. Production should migrate as a deployment step.
+      Database__ApplyMigrationsOnStartup: "true"
       SeedUsers__Admin__Username: "admin"
       SeedUsers__Admin__Password: "Admin@123"
       SeedUsers__User__Username: "user"

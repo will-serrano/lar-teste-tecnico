@@ -1,6 +1,7 @@
 using CandidateAssessment.Application.Abstractions.Caching;
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Application.Abstractions.Time;
+using CandidateAssessment.Application.Diagnostics;
 using CandidateAssessment.Application.Exceptions;
 using CandidateAssessment.Domain.Entities;
 using CandidateAssessment.Domain.ValueObjects;
@@ -31,6 +32,7 @@ public sealed class CreatePersonHandler
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
+        using var operation = ApplicationDiagnostics.StartOperation("persons.create");
 
         var cpf = Cpf.Create(command.Cpf);
 
@@ -51,6 +53,7 @@ public sealed class CreatePersonHandler
         // mantém uma única política para todos os fluxos de mutação.
         await _personCache.InvalidateAsync(person.Id, cancellationToken);
 
+        operation.Complete();
         return person.Id;
     }
 }

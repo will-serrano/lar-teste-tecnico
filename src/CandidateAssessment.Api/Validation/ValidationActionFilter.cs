@@ -1,4 +1,5 @@
 using FluentValidation;
+using CandidateAssessment.Api.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -76,6 +77,7 @@ public sealed class ValidationActionFilter : IAsyncActionFilter
                 context.HttpContext,
                 context.ModelState,
                 statusCode: StatusCodes.Status400BadRequest);
+            problem.Extensions["traceId"] = RequestCorrelation.GetId(context.HttpContext);
             context.Result = new BadRequestObjectResult(problem);
             return;
         }

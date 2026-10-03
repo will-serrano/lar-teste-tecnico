@@ -1,6 +1,7 @@
 using CandidateAssessment.Application.Abstractions.Caching;
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Application.Abstractions.Time;
+using CandidateAssessment.Application.Diagnostics;
 using CandidateAssessment.Application.Exceptions;
 
 namespace CandidateAssessment.Application.Persons.Delete;
@@ -29,6 +30,7 @@ public sealed class DeletePersonHandler
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
+        using var operation = ApplicationDiagnostics.StartOperation("persons.delete");
 
         var person = await _personRepository.GetByIdAsync(command.Id, cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
@@ -39,5 +41,6 @@ public sealed class DeletePersonHandler
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         await _personCache.InvalidateAsync(command.Id, cancellationToken);
+        operation.Complete();
     }
 }

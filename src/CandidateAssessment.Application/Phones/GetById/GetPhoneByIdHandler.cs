@@ -1,4 +1,5 @@
 using CandidateAssessment.Application.Abstractions.Persistence;
+using CandidateAssessment.Application.Diagnostics;
 using CandidateAssessment.Application.Exceptions;
 using CandidateAssessment.Domain.Entities;
 
@@ -22,6 +23,7 @@ public sealed class GetPhoneByIdHandler
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);
+        using var operation = ApplicationDiagnostics.StartOperation("phones.get");
         _ = await _personRepository.GetByIdAsync(query.PersonId, cancellationToken) ?? throw new ApplicationValidationException(
                 "PersonNotFound",
                 $"Person with id '{query.PersonId}' was not found.");
@@ -33,6 +35,7 @@ public sealed class GetPhoneByIdHandler
                 $"Phone with id '{query.PhoneId}' was not found for this person.");
         }
 
+        operation.Complete();
         return phone;
     }
 }

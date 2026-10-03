@@ -1,0 +1,82 @@
+@baseUrl = http://localhost:5000
+@token = paste-access-token-here
+@createKey = person-create-example-1
+@personId = paste-person-id-here
+@phoneId = paste-phone-id-here
+
+### Login (nao idempotente); copie accessToken para @token
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{"username":"admin","password":"Admin@123"}
+
+### Primeira execucao: 201, Location e Idempotency-Replayed: false
+POST {{baseUrl}}/api/v1/persons
+Authorization: Bearer {{token}}
+Idempotency-Key: {{createKey}}
+traceparent: 00-11111111111111111111111111111111-2222222222222222-01
+Content-Type: application/json
+
+{"name":"Example Person","cpf":"52998224725","birthDate":"1990-01-01"}
+
+### Replay: mesmo 201, corpo e Location; JSON reordenado tambem corresponde
+POST {{baseUrl}}/api/v1/persons
+Authorization: Bearer {{token}}
+Idempotency-Key: {{createKey}}
+Content-Type: application/json
+
+{"birthDate":"1990-01-01","cpf":"52998224725","name":"Example Person"}
+
+### Entrada diferente com a chave anterior: 409 IdempotencyKeyReuse
+POST {{baseUrl}}/api/v1/persons
+Authorization: Bearer {{token}}
+Idempotency-Key: {{createKey}}
+Content-Type: application/json
+
+{"name":"Different Person","cpf":"52998224725","birthDate":"1990-01-01"}
+
+### Atualizar pessoa: 204; repita com a mesma chave
+PUT {{baseUrl}}/api/v1/persons/{{personId}}
+Authorization: Bearer {{token}}
+Idempotency-Key: person-update-example-1
+Content-Type: application/json
+
+{"name":"Updated Person","birthDate":"1990-01-01"}
+
+### Criar telefone: 201; repita com a mesma chave
+POST {{baseUrl}}/api/v1/persons/{{personId}}/phones
+Authorization: Bearer {{token}}
+Idempotency-Key: phone-create-example-1
+Content-Type: application/json
+
+{"type":"Mobile","number":"11999999999"}
+
+### Atualizar telefone: 204
+PUT {{baseUrl}}/api/v1/persons/{{personId}}/phones/{{phoneId}}
+Authorization: Bearer {{token}}
+Idempotency-Key: phone-update-example-1
+Content-Type: application/json
+
+{"type":"Mobile","number":"11888888888"}
+
+### Excluir telefone: replay continua 204
+DELETE {{baseUrl}}/api/v1/persons/{{personId}}/phones/{{phoneId}}
+Authorization: Bearer {{token}}
+Idempotency-Key: phone-delete-example-1
+
+### Excluir pessoa: replay continua 204
+DELETE {{baseUrl}}/api/v1/persons/{{personId}}
+Authorization: Bearer {{token}}
+Idempotency-Key: person-delete-example-1
+
+### Restaurar pessoa: replay continua 204
+POST {{baseUrl}}/api/v1/persons/{{personId}}/restore
+Authorization: Bearer {{token}}
+Idempotency-Key: person-restore-example-1
+
+### Sem chave: contrato anterior permanece
+GET {{baseUrl}}/api/v1/persons/{{personId}}
+Authorization: Bearer {{token}}
+
+### Probes nao precisam de autenticacao/chave
+GET {{baseUrl}}/health/ready

@@ -65,6 +65,8 @@ public static class DependencyInjection
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.Configure<SeedUsersOptions>(configuration.GetSection(SeedUsersOptions.SectionName));
         services.Configure<SerilogOptions>(configuration.GetSection(SerilogOptions.SectionName));
+        services.AddApiObservability(configuration);
+        services.AddApiIdempotency(configuration);
 
         AddIdentity(services);
         AddAuthentication(services, configuration);

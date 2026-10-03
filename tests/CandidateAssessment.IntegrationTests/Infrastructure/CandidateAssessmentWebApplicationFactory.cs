@@ -1,6 +1,7 @@
 using System.Data.Common;
 using System.Net.Http.Json;
 using CandidateAssessment.Infrastructure.Authentication;
+using CandidateAssessment.Infrastructure.Diagnostics;
 using CandidateAssessment.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -84,7 +85,7 @@ public class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Pr
 
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        dbContext.Database.EnsureCreated();
+        EnsureSchema(dbContext);
 
         // Cria os dados iniciais do Identity logo após a criação do esquema. O
         // IdentitySeedMiddleware, executado sob demanda em tempo de execução, também
@@ -164,7 +165,9 @@ public class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Pr
         }
     }
 
-    private void AddTestDbContext(IServiceCollection services)
+    protected virtual void EnsureSchema(ApplicationDbContext dbContext) => dbContext.Database.EnsureCreated();
+
+    protected virtual void AddTestDbContext(IServiceCollection services)
     {
         var keepAliveConnection = new SqliteConnection(InMemoryConnectionString);
         keepAliveConnection.Open();
@@ -177,7 +180,8 @@ public class CandidateAssessmentWebApplicationFactory : WebApplicationFactory<Pr
             (sp, options) =>
             {
                 var connection = sp.GetRequiredService<DbConnection>();
-                options.UseSqlite(connection);
+                options.UseSqlite(connection)
+                    .AddInterceptors(sp.GetRequiredService<TelemetryDbCommandInterceptor>());
             });
     }
 

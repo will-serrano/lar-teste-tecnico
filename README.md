@@ -25,7 +25,7 @@ respeitada, e preocupações transversais isoladas.
 
 | Componente | Versão |
 |---|---|
-| .NET SDK | **6.0.x** (a CI fixa `actions/setup-dotnet@v3` com `6.0.x`) |
+| .NET SDK | **10.0.x** para compilar a sintaxe atual; runtime **6.0.x** para executar o alvo `net6.0` |
 | Sistema operacional | Linux, macOS ou Windows |
 | Docker | opcional (para execução containerizada) |
 | dotnet-ef | instalado via `dotnet tool restore` (6.0.36) |
@@ -37,6 +37,8 @@ respeitada, e preocupações transversais isoladas.
 - **ASP.NET Core Identity** + **JWT Bearer**
 - **FluentValidation**
 - **Serilog** (console + arquivo com rolling diário)
+- **OpenTelemetry** (traces e métricas; exportação OTLP opcional)
+- **Idempotência persistida no SQLite**, opt-in nas operações de escrita
 - **IMemoryCache** atrás de `ICacheService`
 - **AspNetCoreRateLimit**
 - **Asp.Versioning.Mvc**
@@ -154,6 +156,8 @@ Configurações tipadas via `Options Pattern`:
 | `SeedUsers` | `SeedUsersOptions` | `appsettings.Development.json` |
 | `Serilog` | `SerilogOptions` | `appsettings.json` |
 | `Cache` | `CacheOptions` | `appsettings.json` |
+| `Idempotency` | `IdempotencyOptions` | `appsettings.json` |
+| `Observability` | `ObservabilityOptions` | defaults tipados e variáveis de ambiente |
 | `IpRateLimiting` | (lib) | `appsettings.json` |
 
 Sobrescreva via **variáveis de ambiente** com `__` (substituem
@@ -188,9 +192,11 @@ dotnet ef database update \
     --startup-project src/CandidateAssessment.Api
 ```
 
-> Em produção real, scripts controlados de migration são mais
-> apropriados do que aplicar via tooling na inicialização. No escopo da
-> avaliação, a CLI é suficiente.
+> Em produção real, aplicar migrations como etapa controlada de implantação.
+> A CLI permanece o padrão. O Compose demonstrativo habilita explicitamente
+> `Database__ApplyMigrationsOnStartup=true` para um volume novo ou atualizado;
+> fora dele essa opção é desabilitada. O alvo e a imagem de execução continuam
+> .NET 6; SDK 10 é usado somente para compilar a sintaxe já adotada no projeto.
 
 ## Credenciais de demonstração
 
@@ -260,6 +266,88 @@ Filtros disponíveis: `?name=...&cpf=...`. Paginação: `?page=1&pageSize=20`
 
 Regras: máximo 5 telefones por pessoa; `(PersonId, Number)` é UNIQUE.
 
+## Idempotência
+
+As sete escritas de pessoas/telefones, incluindo restauração, aceitam o header
+opcional `Idempotency-Key`. Sem ele, o comportamento anterior permanece.
+Login e leituras não usam idempotência.
+
+- Use uma chave nova por operação lógica e **a mesma chave ao tentar novamente**.
+  Ela é isolada pelo emissor JWT e ID do usuário, não pelo token: renovar o JWT
+  do mesmo usuário não perde o replay.
+- Valor único de 1–128 caracteres ASCII: letras, números, `.`, `_`, `:`, `-`.
+- Durante 24 horas configuráveis, sucessos `201`/`204` são repetidos sem nova
+  alteração, preservando corpo, timestamps e `Location`. O header
+  `Idempotency-Replayed: true` identifica o replay.
+- Alterar payload, operação ou recurso com uma chave ainda válida retorna
+  `409` com código `IdempotencyKeyReuse`. Ordem de propriedades e whitespace
+  do JSON não importam; valores e ordem de arrays importam.
+- Erros não consomem a chave. Autenticação, policies e rate limiting continuam
+  sendo aplicados antes de cada replay.
+- O SQLite espera até 2 segundos pelo escritor. Se continuar ocupado, retorna
+  `503`/`IdempotencyStoreBusy` com `Retry-After`; tente novamente com a mesma chave.
+  Essa disputa também pode ocorrer entre chaves diferentes.
+- Request acima de 1 MiB **com chave** retorna `413`; resposta acima desse limite
+  ou falha de serialização causa rollback. Esses limites não atingem chamadas
+  sem chave.
+- Expirado o TTL, a chave pode ser reutilizada e a requisição é avaliada novamente
+  pelas regras de negócio. Limpeza em lotes roda a cada hora.
+
+Mutação e resposta são confirmadas na **mesma transação SQLite**; o cache não
+publica dados ainda não confirmados. Uma falha na entrega depois do commit
+preserva o replay. A garantia não cobre efeitos externos, perda do banco ou
+reuso depois da expiração; o cache segue local à instância.
+
+Aplicar a nova migration com o comando já documentado antes de iniciar a API.
+Veja o [ADR de idempotência](./docs/adr/004-idempotency.md) e os
+[exemplos HTTP](./src/CandidateAssessment.Api/CandidateAssessment.http).
+
+## Observabilidade
+
+Serilog continua gravando console/arquivo rolling, agora com sanitização e
+correlação em todo o escopo da requisição. `TraceId`/`ProblemDetails.traceId`
+mantêm o formato anterior; `OtelTraceId` (32 hex), `SpanId` e `RequestId`
+permitem localizar traces distribuídos. Corpos, CPF, telefone, senhas, JWT,
+chave de idempotência e parâmetros SQL não entram na telemetria.
+
+HTTP, casos de uso, SQLite, cache e idempotência produzem spans e métricas.
+Os labels usam rotas template e outcomes limitados, nunca IDs de recursos ou
+usuários. Sampling de traces não desliga os contadores. Probes/Swagger ficam
+fora da instrumentação ruidosa, sem alterar seus contratos.
+
+**Sem infraestrutura adicional:** `Observability:OtlpEnabled=false` é o padrão;
+a API, os logs e os testes não precisam de Collector. Configuração inválida
+falha no startup; indisponibilidade do destino de exportação não falha escritas
+ou readiness.
+
+**Stack local opcional:**
+
+```powershell
+# Injete GRAFANA_ADMIN_PASSWORD no ambiente local; não versione a senha.
+docker compose -f docker-compose.yml -f docker-compose.observability.yml up --build
+```
+
+- Collector recebe OTLP apenas na rede interna.
+- Jaeger: `http://127.0.0.1:16686` para traces.
+- Prometheus: `http://127.0.0.1:9090` para métricas.
+- Grafana: `http://127.0.0.1:3000`, usuário `admin` e senha injetada; dashboard
+  **Candidate Assessment — API** provisionado com tráfego, erros, latência,
+  cache, SQLite e idempotência.
+- Logs permanecem no Serilog; não há Loki, centralização de logs ou `/metrics`
+  público na API. Jaeger demonstrativo usa memória; Prometheus tem retenção
+  limitada a 24h/256MB. A stack não substitui uma implantação produtiva.
+
+O overlay habilita exportação gRPC; HTTP/protobuf também é configurável. Opções
+principais: `OtlpEnabled`, `OtlpEndpoint`, `OtlpProtocol`, `SamplingRatio`,
+`ExportTimeoutMilliseconds` e `MetricExportIntervalMilliseconds`. Por exemplo,
+`Serilog__ConsoleJson=true` habilita console JSON compacto. Detalhes, limites,
+pacotes compatíveis com `net6.0` e trade-offs estão no
+[ADR de observabilidade](./docs/adr/005-observability.md).
+
+Para verificar, execute uma escrita e seu replay, aguarde exportação/scrape
+(cerca de 30s), procure o `OtelTraceId` no Jaeger e consulte
+`candidateassessment_idempotency_operations_total` no Prometheus.
+
 ## Roles e Policies
 
 | Operação | User | Admin |
@@ -294,8 +382,8 @@ dotnet test CandidateAssessment.sln
 
 | Projeto | Quantidade | Tipo |
 |---|---:|---|
-| `CandidateAssessment.UnitTests` | 135 | Domain + Application (fakes) + mapeamentos da API |
-| `CandidateAssessment.IntegrationTests` | 38 | HTTP → EF → SQLite (WebApplicationFactory) |
+| `CandidateAssessment.UnitTests` | 178 | Domain + Application + mapeamentos, buffering/cache e diagnósticos |
+| `CandidateAssessment.IntegrationTests` | 106 | HTTP → EF → SQLite, concorrência/reinício e Kestrel real |
 
 Os testes unitários dos mapeamentos de pessoas verificam todos os campos da
 resposta para entidades e snapshots de cache, incluindo exclusão, restauração,
@@ -332,8 +420,9 @@ testes inúteis apenas para inflar números.
 ## Health checks
 
 ```http
-GET /health         # liveness: processo respondendo
+GET /health         # checks registrados, incluindo banco
 GET /health/ready   # readiness: processo + banco respondendo
+GET /health/live    # liveness: somente processo; mantém rate limiting atual
 ```
 
 A rota `/health/ready` está fora do rate limiting.
@@ -343,7 +432,7 @@ A rota `/health/ready` está fora do rate limiting.
 Pipeline em `.github/workflows/ci.yml`:
 
 1. Checkout
-2. Setup .NET 6
+2. Setup SDK 10 e runtime .NET 6 (o target continua `net6.0`)
 3. Cache NuGet
 4. `dotnet restore`
 5. `dotnet build -c Release` (com `NETSDK1138` tratado como erro para
@@ -410,7 +499,8 @@ tests/CandidateAssessment.IntegrationTests/
 - Endpoint `PATCH` para updates parciais.
 - Audit log dedicado (separado da entidade).
 - Health check para dependências externas (Redis, SMTP).
-- OpenTelemetry para tracing distribuído (em vez de apenas `traceId`).
+- Atualizar o grafo OpenTelemetry junto da futura migração de runtime, sem
+  perder a sanitização e as garantias de correlação já implementadas.
 - CI publica artefato de cobertura em serviço externo (Codecov, Coveralls).
 
 ## Licença

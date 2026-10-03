@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using CandidateAssessment.Api;
 using CandidateAssessment.Api.Configuration;
+using CandidateAssessment.Api.Diagnostics;
 using CandidateAssessment.Api.Extensions;
 using CandidateAssessment.Api.Middleware;
 using CandidateAssessment.Application;
@@ -37,14 +37,28 @@ try
           .Enrich.FromLogContext()
           .Enrich.WithProperty("Application", "CandidateAssessment.Api")
           .Enrich.WithProperty("Environment", ctx.HostingEnvironment.EnvironmentName)
-          .Enrich.WithProperty("MachineName", Environment.MachineName)
-          .ReadFrom.Configuration(ctx.Configuration);
+          .Enrich.WithProperty("MachineName", Environment.MachineName);
 
+        foreach (var (source, level) in options.Overrides)
+        {
+            if (Enum.TryParse<LogEventLevel>(level, true, out var overrideLevel))
+            {
+                lc.MinimumLevel.Override(source, overrideLevel);
+            }
+        }
+
+        var destinations = new LoggerConfiguration().MinimumLevel.Verbose();
         if (options.WriteToConsole)
         {
-            lc.WriteTo.Console(
-                outputTemplate:
-                    "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}");
+            if (options.ConsoleJson)
+            {
+                destinations.WriteTo.Console(new CompactJsonFormatter());
+            }
+            else
+            {
+                destinations.WriteTo.Console(
+                    outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}");
+            }
         }
 
         if (options.WriteToFile)
@@ -55,13 +69,14 @@ try
                 path = Path.Combine(builder.Environment.ContentRootPath, path);
             }
 
-            lc.WriteTo.File(
+            destinations.WriteTo.File(
                 formatter: new CompactJsonFormatter(),
                 path: path,
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: options.RetainedFileCountLimit,
                 shared: true);
         }
+        lc.WriteTo.Sink(new SanitizingLogSink(destinations.CreateLogger()));
     });
 
     builder.Services
@@ -71,24 +86,24 @@ try
 
     var app = builder.Build();
 
+    app.UseRouting();
+    app.UseMiddleware<TelemetryCorrelationMiddleware>();
+
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
         app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1"));
     }
 
-    // Inclui o TraceIdentifier do ASP.NET Core (ou Activity.Id, quando disponível)
-    // nas propriedades de cada evento de log, para que logs e ProblemDetails compartilhem
-    // o mesmo identificador de correlação sem configuração manual.
-    app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = (diag, http) =>
+    app.UseSerilogRequestLogging(opts =>
+    {
+        opts.MessageTemplate = "HTTP {RequestMethod} {Route} responded {StatusCode} in {Elapsed:0.0000} ms";
+        opts.EnrichDiagnosticContext = (diag, http) =>
         {
-            var traceId = Activity.Current?.Id ?? http.TraceIdentifier;
-            diag.Set("TraceId", traceId);
-            diag.Set("RequestPath", http.Request.Path.Value);
-            diag.Set("RequestMethod", http.Request.Method);
-            diag.Set("ClientIp", http.Connection.RemoteIpAddress?.ToString());
-            diag.Set("UserAgent", http.Request.Headers.UserAgent.ToString());
-        });
+            diag.Set("Route", ApiDiagnostics.Route(http));
+            diag.Set("RequestMethod", ApiDiagnostics.Method(http.Request.Method));
+        };
+    });
 
     app.UseMiddleware<IdentitySeedMiddleware>();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -97,6 +112,7 @@ try
     app.UseAuthorization();
 
     app.UseApiRateLimiting();
+    app.UseMiddleware<IdempotencyMiddleware>();
 
     app.MapControllers();
     app.MapHealthChecks("/health");
@@ -110,9 +126,8 @@ try
         Predicate = _ => false,
     });
 
+    app.LogApiStartup(Log.Logger);
     await app.RunAsync();
-
-    Log.Information("Candidate Assessment API started on environment {Environment}", app.Environment.EnvironmentName);
 }
 catch (Exception ex)
 {

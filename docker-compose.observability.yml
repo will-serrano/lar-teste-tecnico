@@ -1,0 +1,65 @@
+services:
+  api:
+    environment:
+      Observability__OtlpEnabled: "true"
+      Observability__OtlpEndpoint: "http://collector:4317"
+      Observability__OtlpProtocol: "grpc"
+      Observability__SamplingRatio: "1"
+      Serilog__ConsoleJson: "true"
+
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.123.0
+    command: ["--config=/etc/otelcol/config.yml"]
+    restart: unless-stopped
+    volumes:
+      - ./observability/collector.yml:/etc/otelcol/config.yml:ro
+    expose:
+      - "4317"
+      - "4318"
+      - "8889"
+    depends_on:
+      - jaeger
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.65.0
+    restart: unless-stopped
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "127.0.0.1:16686:16686"
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=24h"
+      - "--storage.tsdb.retention.size=256MB"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - observability-prometheus:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD locally; do not commit it}"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - observability-grafana:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  observability-prometheus:
+  observability-grafana:

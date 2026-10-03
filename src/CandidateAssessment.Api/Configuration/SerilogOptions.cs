@@ -23,6 +23,8 @@ public sealed class SerilogOptions
     /// </summary>
     public bool WriteToConsole { get; set; } = true;
 
+    public bool ConsoleJson { get; set; }
+
     /// <summary>
     /// Quando verdadeiro, grava arquivos de log diários rotativos no sistema de arquivos local.
     /// </summary>

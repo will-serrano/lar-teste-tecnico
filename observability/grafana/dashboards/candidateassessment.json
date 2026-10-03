@@ -1,0 +1,89 @@
+{
+  "uid": "candidateassessment",
+  "title": "Candidate Assessment — API",
+  "description": "Bounded-cardinality HTTP, application, SQLite, cache and idempotency metrics. Logs remain in Serilog; traces are available in Jaeger.",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "time": { "from": "now-30m", "to": "now" },
+  "tags": ["candidateassessment", "opentelemetry"],
+  "panels": [
+    {
+      "id": 1, "title": "Requests / second by route", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "candidate-prometheus" },
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [{ "expr": "sum by (http_route) (rate(candidate_http_request_count_total[5m]))", "legendFormat": "{{http_route}}" }]
+    },
+    {
+      "id": 2, "title": "5xx / 429 / 503 response fraction", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "candidate-prometheus" },
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "percentunit" } },
+      "targets": [
+        { "expr": "sum(rate(candidate_http_request_count_total{http_response_status_code=~\"5..\"}[5m])) / clamp_min(sum(rate(candidate_http_request_count_total[5m])), 0.000001)", "legendFormat": "5xx" },
+        { "expr": "sum(rate(candidate_http_request_count_total{http_response_status_code=\"429\"}[5m])) / clamp_min(sum(rate(candidate_http_request_count_total[5m])), 0.000001)", "legendFormat": "429" },
+        { "expr": "sum(rate(candidate_http_request_count_total{http_response_status_code=\"503\"}[5m])) / clamp_min(sum(rate(candidate_http_request_count_total[5m])), 0.000001)", "legendFormat": "503 (also counted in 5xx)" }
+      ]
+    },
+    {
+      "id": 3, "title": "HTTP latency p50 / p95 / p99", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "candidate-prometheus" },
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum by (le) (rate(candidate_http_request_duration_seconds_bucket[5m])))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum by (le) (rate(candidate_http_request_duration_seconds_bucket[5m])))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum by (le) (rate(candidate_http_request_duration_seconds_bucket[5m])))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "id": 4, "title": "Cache outcomes / second", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "candidate-prometheus" },
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "targets": [{ "expr": "sum by (outcome) (rate(candidateassessment_cache_operations_total[5m]))", "legendFormat": "{{outcome}}" }]
+    },
+    {
+      "id": 5, "title": "Idempotency outcomes / second", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "candidate-prometheus" },
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "targets": [{ "expr": "sum by (operation, outcome) (rate(candidateassessment_idempotency_operations_total[5m]))", "legendFormat": "{{operation}} {{outcome}}" }]
+    },
+    {
+      "id": 6, "title": "SQLite lock wait p95", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "candidate-prometheus" },
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [{ "expr": "histogram_quantile(0.95, sum by (le) (rate(candidateassessment_idempotency_lock_wait_seconds_bucket[5m])))", "legendFormat": "p95" }]
+    },
+    {
+      "id": 7, "title": "SQLite command latency p95", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "candidate-prometheus" },
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [{ "expr": "histogram_quantile(0.95, sum by (le, operation) (rate(candidate_db_command_duration_seconds_bucket[5m])))", "legendFormat": "{{operation}}" }]
+    },
+    {
+      "id": 8, "title": "SDK / exporter warnings and failures", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "candidate-prometheus" },
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum(rate(candidate_telemetry_export_failure_count_total[5m]))", "legendFormat": "export failures / second" },
+        { "expr": "sum(rate(candidate_telemetry_sdk_diagnostic_count_total[5m]))", "legendFormat": "unexpected SDK diagnostics / second" }
+      ]
+    },
+    {
+      "id": 9, "title": "Idempotency duration p95 by operation", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "candidate-prometheus" },
+      "gridPos": { "x": 0, "y": 32, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [{ "expr": "histogram_quantile(0.95, sum by (le, operation) (rate(candidateassessment_idempotency_duration_seconds_bucket[5m])))", "legendFormat": "{{operation}}" }]
+    },
+    {
+      "id": 10, "title": "Cleanup records / failures over 5 minutes", "type": "timeseries",
+      "description": "Removed counts represent records; failed counts represent cleanup failures.",
+      "datasource": { "type": "prometheus", "uid": "candidate-prometheus" },
+      "gridPos": { "x": 12, "y": 32, "w": 12, "h": 8 },
+      "targets": [{ "expr": "sum by (outcome) (increase(candidateassessment_idempotency_cleanup_total[5m]))", "legendFormat": "{{outcome}}" }]
+    }
+  ]
+}

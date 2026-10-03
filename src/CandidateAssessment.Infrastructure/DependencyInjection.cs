@@ -1,9 +1,12 @@
 using CandidateAssessment.Application.Abstractions.Authentication;
 using CandidateAssessment.Application.Abstractions.Caching;
+using CandidateAssessment.Application.Abstractions.Idempotency;
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Application.Abstractions.Time;
 using CandidateAssessment.Infrastructure.Authentication;
 using CandidateAssessment.Infrastructure.Caching;
+using CandidateAssessment.Infrastructure.Diagnostics;
+using CandidateAssessment.Infrastructure.Idempotency;
 using CandidateAssessment.Infrastructure.Persistence;
 using CandidateAssessment.Infrastructure.Persistence.Repositories;
 using CandidateAssessment.Infrastructure.Time;
@@ -22,12 +25,15 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? "Data Source=candidateassessment.db";
 
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite(connectionString));
+        services.AddScoped<TelemetryDbCommandInterceptor>();
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
+            options.UseSqlite(connectionString)
+                .AddInterceptors(sp.GetRequiredService<TelemetryDbCommandInterceptor>()));
 
         services.AddScoped<IPersonRepository, EfPersonRepository>();
         services.AddScoped<IPhoneRepository, EfPhoneRepository>();
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
+        services.AddScoped<IIdempotencyStore, SqliteIdempotencyStore>();
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 
         services.AddScoped<IUserAuthenticationService, IdentityUserAuthenticationService>();
@@ -45,7 +51,9 @@ public static class DependencyInjection
 
         services.Configure<CacheOptions>(configuration.GetSection(CacheOptions.SectionName));
 
-        services.AddSingleton<ICacheService, MemoryCacheService>();
-        services.AddSingleton<IPersonCache, PersonCacheInvalidator>();
+        services.AddSingleton<MemoryCacheService>();
+        services.AddScoped<TransactionalCacheState>();
+        services.AddScoped<ICacheService, TransactionalCacheService>();
+        services.AddScoped<IPersonCache, PersonCacheInvalidator>();
     }
 }

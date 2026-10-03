@@ -45,3 +45,23 @@ dotnet test CandidateAssessment.sln --no-restore --verbosity minimal
 ```
 
 **Resultado:** aprovado, 122 testes unitários e 38 testes de integração (160 no total), zero falhas e zero testes ignorados.
+
+## Evolução: idempotência e observabilidade
+
+Validação adicional em 2026-10-02, preservando a execução histórica acima:
+
+- [x] Sete escritas com header opcional, replay de 201/204, corpo e Location.
+- [x] Escopo por usuário, conflitos de chave, validação, limites e autorização.
+- [x] Transação atômica, falhas de serialização/completion, reinício e TTL de 24h.
+- [x] SQLite em arquivo com conexões independentes: concorrência, timeout e upgrade de migration preservando dados.
+- [x] Cache transacional: nenhum snapshot não confirmado; invalidação após commit.
+- [x] Kestrel real: headers mantidos na primeira entrega/replay e 204 sem escrita de corpo ou exceção posterior.
+- [x] Correlação exata de traceId em erros/replays, sampling e privacidade dos sinais.
+- [x] Imagem Docker com runtime .NET 6, usuário não root e migration demonstrativa opt-in.
+- [x] Pipeline real Collector → Jaeger/Prometheus/Grafana: trace conhecido com 17 spans, outcomes executed/replayed e 10 painéis provisionados.
+- [x] Collector indisponível: escrita/replay e readiness continuam funcionando; falha de exportação é logada sem payload sensível.
+
+O build usa SDK 10 para a sintaxe já adotada, mantendo `net6.0` e runtime 6.
+Os arquivos alterados passam na verificação de whitespace. O format check
+global também aponta faltas históricas de newline final em arquivos não
+alterados; elas não foram incluídas nesta evolução.

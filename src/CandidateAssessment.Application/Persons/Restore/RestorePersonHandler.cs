@@ -1,6 +1,7 @@
 using CandidateAssessment.Application.Abstractions.Caching;
 using CandidateAssessment.Application.Abstractions.Persistence;
 using CandidateAssessment.Application.Abstractions.Time;
+using CandidateAssessment.Application.Diagnostics;
 using CandidateAssessment.Application.Exceptions;
 
 namespace CandidateAssessment.Application.Persons.Restore;
@@ -29,6 +30,7 @@ public sealed class RestorePersonHandler
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
+        using var operation = ApplicationDiagnostics.StartOperation("persons.restore");
 
         var person = await _personRepository.GetByIdIncludingDeletedAsync(
             command.Id,
@@ -41,5 +43,6 @@ public sealed class RestorePersonHandler
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         await _personCache.InvalidateAsync(command.Id, cancellationToken);
+        operation.Complete();
     }
 }

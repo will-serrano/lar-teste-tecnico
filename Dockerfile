@@ -4,12 +4,13 @@
 # Stage 1: restore + publish
 # Builds a self-contained output ready to be copied into the runtime image.
 # ----------------------------------------------------------------------------
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy NuGet manifest files first so Docker can cache the restore layer
 # independently from source changes.
 COPY CandidateAssessment.sln ./
+COPY Directory.Build.props Directory.Build.targets ./
 COPY src/CandidateAssessment.Domain/CandidateAssessment.Domain.csproj             src/CandidateAssessment.Domain/
 COPY src/CandidateAssessment.Application/CandidateAssessment.Application.csproj   src/CandidateAssessment.Application/
 COPY src/CandidateAssessment.Infrastructure/CandidateAssessment.Infrastructure.csproj src/CandidateAssessment.Infrastructure/
@@ -32,17 +33,19 @@ RUN dotnet publish src/CandidateAssessment.Api/CandidateAssessment.Api.csproj \
 # Stage 2: runtime
 # ASP.NET Core 6 runtime + non-root user + writable volume for SQLite.
 # ----------------------------------------------------------------------------
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-jammy AS runtime
 WORKDIR /app
 
 # SQLite needs a writable directory. /app/data is mounted as a volume in
 # docker-compose so the database file persists across container restarts.
-RUN mkdir -p /app/data /app/logs && \
+RUN apt-get update && apt-get install -y --no-install-recommends wget && apt-get clean && \
+    groupadd --system app && useradd --system --gid app --create-home app && \
+    mkdir -p /app/data /app/logs && \
     chown -R app:app /app
 
 COPY --from=build --chown=app:app /app/publish .
 
-# Run as the non-root user already present in the base image.
+# .NET 6 does not provide the non-root app user; it is created above.
 USER app
 
 ENV ASPNETCORE_URLS=http://+:8080 \

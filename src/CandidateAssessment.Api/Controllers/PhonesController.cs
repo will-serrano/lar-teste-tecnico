@@ -1,6 +1,7 @@
 using CandidateAssessment.Api.Authorization;
 using CandidateAssessment.Api.Contracts.Phones;
 using CandidateAssessment.Api.Facades;
+using CandidateAssessment.Api.Idempotency;
 using CandidateAssessment.Application.Phones.Create;
 using CandidateAssessment.Application.Phones.Delete;
 using CandidateAssessment.Application.Phones.GetById;
@@ -55,6 +56,7 @@ public class PhonesController : ControllerBase
     }
 
     [HttpPost]
+    [Idempotent]
     [Authorize(Policy = AuthorizationPolicies.CanManagePersons)]
     [ProducesResponseType(typeof(PhoneResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -73,6 +75,7 @@ public class PhonesController : ControllerBase
     }
 
     [HttpPut("{phoneId:guid}")]
+    [Idempotent]
     [Authorize(Policy = AuthorizationPolicies.CanManagePersons)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -91,6 +94,7 @@ public class PhonesController : ControllerBase
     }
 
     [HttpDelete("{phoneId:guid}")]
+    [Idempotent]
     [Authorize(Policy = AuthorizationPolicies.CanManagePersons)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]

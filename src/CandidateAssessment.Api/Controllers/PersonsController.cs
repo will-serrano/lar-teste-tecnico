@@ -2,6 +2,7 @@ using CandidateAssessment.Api.Authorization;
 using CandidateAssessment.Api.Contracts;
 using CandidateAssessment.Api.Contracts.Persons;
 using CandidateAssessment.Api.Facades;
+using CandidateAssessment.Api.Idempotency;
 using CandidateAssessment.Application.Persons.Create;
 using CandidateAssessment.Application.Persons.Delete;
 using CandidateAssessment.Application.Persons.GetById;
@@ -30,6 +31,7 @@ public class PersonsController : ControllerBase
     }
 
     [HttpPost]
+    [Idempotent]
     [Authorize(Policy = AuthorizationPolicies.CanManagePersons)]
     [ProducesResponseType(typeof(PersonResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -82,6 +84,7 @@ public class PersonsController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Idempotent]
     [Authorize(Policy = AuthorizationPolicies.CanManagePersons)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -98,6 +101,7 @@ public class PersonsController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Idempotent]
     [Authorize(Policy = AuthorizationPolicies.CanManagePersons)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -110,6 +114,7 @@ public class PersonsController : ControllerBase
     }
 
     [HttpPost("{id:guid}/restore")]
+    [Idempotent]
     [Authorize(Policy = AuthorizationPolicies.CanManagePersons)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]

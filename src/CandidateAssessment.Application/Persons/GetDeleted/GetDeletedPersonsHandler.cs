@@ -1,5 +1,6 @@
 using CandidateAssessment.Application.Abstractions.Pagination;
 using CandidateAssessment.Application.Abstractions.Persistence;
+using CandidateAssessment.Application.Diagnostics;
 using CandidateAssessment.Domain.Entities;
 
 namespace CandidateAssessment.Application.Persons.GetDeleted;
@@ -18,6 +19,7 @@ public sealed class GetDeletedPersonsHandler
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);
+        using var operation = ApplicationDiagnostics.StartOperation("persons.deleted");
 
         var page = PaginationOptions.NormalizePage(query.Page);
         var pageSize = PaginationOptions.NormalizePageSize(query.PageSize);
@@ -28,6 +30,7 @@ public sealed class GetDeletedPersonsHandler
             pageSize,
             cancellationToken);
 
+        operation.Complete();
         return new PagedResult<Person>(items, page, pageSize, totalItems);
     }
 }
