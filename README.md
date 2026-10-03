@@ -12,8 +12,7 @@ Docker, testes em camadas e CI.
 
 ## Status
 
-✅ Pronto para avaliação (Etapas 1–5 concluídas). Veja o roadmap em
-[`docs/adr/`](./docs/adr/).
+✅ Pronto para avaliação (Etapas 1–5 concluídas).
 
 ## Objetivo
 
@@ -59,7 +58,6 @@ no VS Code para recarregar o C# Dev Kit e o Test Explorer. A solução padrão
 ```text
 CandidateAssessment/
 ├── .github/workflows/ci.yml         # CI: build + format check + tests + coverage + Docker
-├── docs/adr/                        # Architecture Decision Records
 ├── src/
 │   ├── CandidateAssessment.Domain           # entidades, value objects, enums, exceptions
 │   ├── CandidateAssessment.Application      # casos de uso + abstrações
@@ -89,17 +87,17 @@ Application ───► Domain
 Domain ────────► (apenas BCL)
 ```
 
-Veja [`docs/adr/001-clean-architecture.md`](./docs/adr/001-clean-architecture.md).
-
 ## Decisões técnicas
 
-1. **Clean Architecture com feature folders** na Application
-   ([ADR 001](./docs/adr/001-clean-architecture.md)).
+Este README é a única documentação versionada. A documentação complementar
+é mantida apenas localmente; a coleção HTTP permanece versionada como ferramenta
+de teste da API.
+
+1. **Clean Architecture com feature folders** na Application.
 2. **EF Core 6 + SQLite** como provider padrão; `IUnitOfWork` +
-   `IPersonRepository` + `IPhoneRepository` específicos por entidade
-   ([ADR 002](./docs/adr/002-entity-framework-core.md)).
+   `IPersonRepository` + `IPhoneRepository` específicos por entidade.
 3. **Soft delete em `Person`** com filtro global e rota administrativa
-   dedicada ([ADR 003](./docs/adr/003-soft-delete.md)).
+   dedicada.
 4. **`AspNetCoreRateLimit`** em vez do middleware nativo do .NET 7+ (o
    projeto trava em .NET 6); isolado em
    `Api/Extensions/RateLimitingExtensions.cs` para troca futura.
@@ -308,8 +306,7 @@ preserva o replay. A garantia não cobre efeitos externos, perda do banco ou
 reuso depois da expiração; o cache segue local à instância.
 
 Aplicar a nova migration com o comando já documentado antes de iniciar a API.
-Veja o [ADR de idempotência](./docs/adr/004-idempotency.md) e os
-[exemplos HTTP](./src/CandidateAssessment.Api/CandidateAssessment.http).
+Veja os [exemplos HTTP](./src/CandidateAssessment.Api/CandidateAssessment.http).
 
 ## Observabilidade
 
@@ -349,9 +346,7 @@ docker compose -f docker-compose.yml -f docker-compose.observability.yml up --bu
 O overlay habilita exportação gRPC; HTTP/protobuf também é configurável. Opções
 principais: `OtlpEnabled`, `OtlpEndpoint`, `OtlpProtocol`, `SamplingRatio`,
 `ExportTimeoutMilliseconds` e `MetricExportIntervalMilliseconds`. Por exemplo,
-`Serilog__ConsoleJson=true` habilita console JSON compacto. Detalhes, limites,
-pacotes compatíveis com `net6.0` e trade-offs estão no
-[ADR de observabilidade](./docs/adr/005-observability.md).
+`Serilog__ConsoleJson=true` habilita console JSON compacto.
 
 Para verificar, execute uma escrita e seu replay, aguarde exportação/scrape
 (cerca de 30s), procure o `OtelTraceId` no Jaeger e consulte

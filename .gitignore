@@ -1,5 +1,7 @@
-# Plano (não versionado)
-plan.md
+# Documentação local (apenas o README da raiz é versionado)
+/docs/
+*.md
+!/README.md
 
 ## Ignora arquivos temporários do Visual Studio, resultados de compilação e
 ## arquivos gerados por extensões populares do Visual Studio.
