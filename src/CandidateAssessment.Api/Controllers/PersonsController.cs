@@ -1,6 +1,7 @@
 using CandidateAssessment.Api.Authorization;
 using CandidateAssessment.Api.Contracts;
 using CandidateAssessment.Api.Contracts.Persons;
+using CandidateAssessment.Api.Facades;
 using CandidateAssessment.Application.Persons.Create;
 using CandidateAssessment.Application.Persons.Delete;
 using CandidateAssessment.Application.Persons.GetById;
@@ -8,7 +9,6 @@ using CandidateAssessment.Application.Persons.GetDeleted;
 using CandidateAssessment.Application.Persons.Restore;
 using CandidateAssessment.Application.Persons.Search;
 using CandidateAssessment.Application.Persons.Update;
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ApiVersionAttribute = Asp.Versioning.ApiVersionAttribute;
@@ -22,42 +22,11 @@ namespace CandidateAssessment.Api.Controllers;
 [Authorize]
 public class PersonsController : ControllerBase
 {
-    private readonly CreatePersonHandler _createHandler;
-    private readonly GetPersonByIdHandler _getByIdHandler;
-    private readonly SearchPersonsHandler _searchHandler;
-    private readonly UpdatePersonHandler _updateHandler;
-    private readonly DeletePersonHandler _deleteHandler;
-    private readonly RestorePersonHandler _restoreHandler;
-    private readonly GetDeletedPersonsHandler _getDeletedHandler;
-    private readonly IValidator<CreatePersonRequest> _createValidator;
-    private readonly IValidator<UpdatePersonRequest> _updateValidator;
-    private readonly IValidator<SearchPersonsQuery> _searchValidator;
-    private readonly IValidator<GetDeletedPersonsQuery> _getDeletedValidator;
+    private readonly PersonsFacade _persons;
 
-    public PersonsController(
-        CreatePersonHandler createHandler,
-        GetPersonByIdHandler getByIdHandler,
-        SearchPersonsHandler searchHandler,
-        UpdatePersonHandler updateHandler,
-        DeletePersonHandler deleteHandler,
-        RestorePersonHandler restoreHandler,
-        GetDeletedPersonsHandler getDeletedHandler,
-        IValidator<CreatePersonRequest> createValidator,
-        IValidator<UpdatePersonRequest> updateValidator,
-        IValidator<SearchPersonsQuery> searchValidator,
-        IValidator<GetDeletedPersonsQuery> getDeletedValidator)
+    public PersonsController(PersonsFacade persons)
     {
-        _createHandler = createHandler;
-        _getByIdHandler = getByIdHandler;
-        _searchHandler = searchHandler;
-        _updateHandler = updateHandler;
-        _deleteHandler = deleteHandler;
-        _restoreHandler = restoreHandler;
-        _getDeletedHandler = getDeletedHandler;
-        _createValidator = createValidator;
-        _updateValidator = updateValidator;
-        _searchValidator = searchValidator;
-        _getDeletedValidator = getDeletedValidator;
+        _persons = persons;
     }
 
     [HttpPost]
@@ -71,30 +40,15 @@ public class PersonsController : ControllerBase
         [FromBody] CreatePersonRequest request,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request);
-
-        var validation = await _createValidator.ValidateAsync(request, cancellationToken);
-        if (!validation.IsValid)
-        {
-            foreach (var error in validation.Errors)
-            {
-                ModelState.AddModelError(
-                    string.IsNullOrEmpty(error.PropertyName) ? "request" : error.PropertyName,
-                    error.ErrorMessage);
-            }
-
-            return ValidationProblem(ModelState);
-        }
-
         var command = new CreatePersonCommand(request.Name, request.Cpf, request.BirthDate);
-        var id = await _createHandler.HandleAsync(command, cancellationToken);
+        var id = await _persons.CreateAsync(command, cancellationToken);
 
         // Re-read the person so the 201 response carries the timestamps persisted by
         // the domain (CreatedAtUtc/UpdatedAtUtc). Building the DTO directly from the
         // request — as the previous version did — silently dropped those fields and
         // made them surface as DateTime.MinValue (0001-01-01T00:00:00). Mirrors the
         // pattern already used by PhonesController.Create.
-        var cached = await _getByIdHandler.HandleAsync(new GetPersonByIdQuery(id), cancellationToken);
+        var cached = await _persons.GetByIdAsync(new GetPersonByIdQuery(id), cancellationToken);
 
         return CreatedAtAction(nameof(GetById), new { id }, cached.ToResponse());
     }
@@ -109,8 +63,7 @@ public class PersonsController : ControllerBase
         Guid id,
         CancellationToken cancellationToken)
     {
-        var query = new GetPersonByIdQuery(id);
-        var cached = await _getByIdHandler.HandleAsync(query, cancellationToken);
+        var cached = await _persons.GetByIdAsync(new GetPersonByIdQuery(id), cancellationToken);
         return Ok(cached.ToResponse());
     }
 
@@ -121,28 +74,10 @@ public class PersonsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<PagedResponse<PersonResponse>>> Search(
-        [FromQuery] string? name,
-        [FromQuery] string? cpf,
-        [FromQuery] int? page,
-        [FromQuery] int? pageSize,
+        [FromQuery] SearchPersonsQuery query,
         CancellationToken cancellationToken)
     {
-        var query = new SearchPersonsQuery(name, cpf, page, pageSize);
-
-        var validation = await _searchValidator.ValidateAsync(query, cancellationToken);
-        if (!validation.IsValid)
-        {
-            foreach (var error in validation.Errors)
-            {
-                ModelState.AddModelError(
-                    string.IsNullOrEmpty(error.PropertyName) ? "query" : error.PropertyName,
-                    error.ErrorMessage);
-            }
-
-            return ValidationProblem(ModelState);
-        }
-
-        var result = await _searchHandler.HandleAsync(query, cancellationToken);
+        var result = await _persons.SearchAsync(query, cancellationToken);
         return Ok(result.ToResponse(p => p.ToResponse()));
     }
 
@@ -158,23 +93,7 @@ public class PersonsController : ControllerBase
         [FromBody] UpdatePersonRequest request,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request);
-
-        var validation = await _updateValidator.ValidateAsync(request, cancellationToken);
-        if (!validation.IsValid)
-        {
-            foreach (var error in validation.Errors)
-            {
-                ModelState.AddModelError(
-                    string.IsNullOrEmpty(error.PropertyName) ? "request" : error.PropertyName,
-                    error.ErrorMessage);
-            }
-
-            return ValidationProblem(ModelState);
-        }
-
-        var command = new UpdatePersonCommand(id, request.Name, request.BirthDate);
-        await _updateHandler.HandleAsync(command, cancellationToken);
+        await _persons.UpdateAsync(new UpdatePersonCommand(id, request.Name, request.BirthDate), cancellationToken);
         return NoContent();
     }
 
@@ -186,8 +105,7 @@ public class PersonsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var command = new DeletePersonCommand(id);
-        await _deleteHandler.HandleAsync(command, cancellationToken);
+        await _persons.DeleteAsync(new DeletePersonCommand(id), cancellationToken);
         return NoContent();
     }
 
@@ -202,37 +120,21 @@ public class PersonsController : ControllerBase
         Guid id,
         CancellationToken cancellationToken)
     {
-        var command = new RestorePersonCommand(id);
-        await _restoreHandler.HandleAsync(command, cancellationToken);
+        await _persons.RestoreAsync(new RestorePersonCommand(id), cancellationToken);
         return NoContent();
     }
 
     [HttpGet("deleted")]
     [Authorize(Policy = AuthorizationPolicies.CanViewDeletedPersons)]
     [ProducesResponseType(typeof(PagedResponse<PersonResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<PagedResponse<PersonResponse>>> GetDeleted(
-        [FromQuery] int? page,
-        [FromQuery] int? pageSize,
+        [FromQuery] GetDeletedPersonsQuery query,
         CancellationToken cancellationToken)
     {
-        var query = new GetDeletedPersonsQuery(page, pageSize);
-
-        var validation = await _getDeletedValidator.ValidateAsync(query, cancellationToken);
-        if (!validation.IsValid)
-        {
-            foreach (var error in validation.Errors)
-            {
-                ModelState.AddModelError(
-                    string.IsNullOrEmpty(error.PropertyName) ? "query" : error.PropertyName,
-                    error.ErrorMessage);
-            }
-
-            return ValidationProblem(ModelState);
-        }
-
-        var result = await _getDeletedHandler.HandleAsync(query, cancellationToken);
+        var result = await _persons.GetDeletedAsync(query, cancellationToken);
         return Ok(result.ToResponse(p => p.ToResponse()));
     }
 }

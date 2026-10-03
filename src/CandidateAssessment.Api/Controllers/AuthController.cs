@@ -1,6 +1,5 @@
 using CandidateAssessment.Api.Contracts.Auth;
 using CandidateAssessment.Application.Authentication.Login;
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ApiVersionAttribute = Asp.Versioning.ApiVersionAttribute;
@@ -15,12 +14,10 @@ namespace CandidateAssessment.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly LoginHandler _loginHandler;
-    private readonly IValidator<LoginRequest> _validator;
 
-    public AuthController(LoginHandler loginHandler, IValidator<LoginRequest> validator)
+    public AuthController(LoginHandler loginHandler)
     {
         _loginHandler = loginHandler;
-        _validator = validator;
     }
 
     [HttpPost("login")]
@@ -31,23 +28,9 @@ public class AuthController : ControllerBase
         [FromBody] LoginRequest request,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request);
-
-        var validation = await _validator.ValidateAsync(request, cancellationToken);
-        if (!validation.IsValid)
-        {
-            foreach (var error in validation.Errors)
-            {
-                ModelState.AddModelError(
-                    string.IsNullOrEmpty(error.PropertyName) ? "request" : error.PropertyName,
-                    error.ErrorMessage);
-            }
-
-            return ValidationProblem(ModelState);
-        }
-
-        var command = new LoginCommand(request.Username, request.Password);
-        var result = await _loginHandler.HandleAsync(command, cancellationToken);
+        var result = await _loginHandler.HandleAsync(
+            new LoginCommand(request.Username, request.Password),
+            cancellationToken);
 
         return Ok(new LoginResponse
         {

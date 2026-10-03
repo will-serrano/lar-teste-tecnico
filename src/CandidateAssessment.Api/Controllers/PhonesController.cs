@@ -1,11 +1,10 @@
 using CandidateAssessment.Api.Authorization;
 using CandidateAssessment.Api.Contracts.Phones;
+using CandidateAssessment.Api.Facades;
 using CandidateAssessment.Application.Phones.Create;
 using CandidateAssessment.Application.Phones.Delete;
 using CandidateAssessment.Application.Phones.GetById;
-using CandidateAssessment.Application.Phones.List;
 using CandidateAssessment.Application.Phones.Update;
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ApiVersionAttribute = Asp.Versioning.ApiVersionAttribute;
@@ -19,30 +18,11 @@ namespace CandidateAssessment.Api.Controllers;
 [Authorize]
 public class PhonesController : ControllerBase
 {
-    private readonly CreatePhoneHandler _createHandler;
-    private readonly UpdatePhoneHandler _updateHandler;
-    private readonly DeletePhoneHandler _deleteHandler;
-    private readonly GetPhoneByIdHandler _getByIdHandler;
-    private readonly ListPhonesHandler _listHandler;
-    private readonly IValidator<CreatePhoneRequest> _createValidator;
-    private readonly IValidator<UpdatePhoneRequest> _updateValidator;
+    private readonly PhonesFacade _phones;
 
-    public PhonesController(
-        CreatePhoneHandler createHandler,
-        UpdatePhoneHandler updateHandler,
-        DeletePhoneHandler deleteHandler,
-        GetPhoneByIdHandler getByIdHandler,
-        ListPhonesHandler listHandler,
-        IValidator<CreatePhoneRequest> createValidator,
-        IValidator<UpdatePhoneRequest> updateValidator)
+    public PhonesController(PhonesFacade phones)
     {
-        _createHandler = createHandler;
-        _updateHandler = updateHandler;
-        _deleteHandler = deleteHandler;
-        _getByIdHandler = getByIdHandler;
-        _listHandler = listHandler;
-        _createValidator = createValidator;
-        _updateValidator = updateValidator;
+        _phones = phones;
     }
 
     [HttpGet]
@@ -55,8 +35,7 @@ public class PhonesController : ControllerBase
         Guid personId,
         CancellationToken cancellationToken)
     {
-        var query = new ListPhonesQuery(personId);
-        var phones = await _listHandler.HandleAsync(query, cancellationToken);
+        var phones = await _phones.ListAsync(new Application.Phones.List.ListPhonesQuery(personId), cancellationToken);
         return Ok(phones.Select(p => p.ToResponse()).ToList());
     }
 
@@ -71,8 +50,7 @@ public class PhonesController : ControllerBase
         Guid phoneId,
         CancellationToken cancellationToken)
     {
-        var query = new GetPhoneByIdQuery(personId, phoneId);
-        var phone = await _getByIdHandler.HandleAsync(query, cancellationToken);
+        var phone = await _phones.GetByIdAsync(new GetPhoneByIdQuery(personId, phoneId), cancellationToken);
         return Ok(phone.ToResponse());
     }
 
@@ -89,27 +67,8 @@ public class PhonesController : ControllerBase
         [FromBody] CreatePhoneRequest request,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request);
-
-        var validation = await _createValidator.ValidateAsync(request, cancellationToken);
-        if (!validation.IsValid)
-        {
-            foreach (var error in validation.Errors)
-            {
-                ModelState.AddModelError(
-                    string.IsNullOrEmpty(error.PropertyName) ? "request" : error.PropertyName,
-                    error.ErrorMessage);
-            }
-
-            return ValidationProblem(ModelState);
-        }
-
-        var command = new CreatePhoneCommand(personId, request.Type, request.Number);
-        var id = await _createHandler.HandleAsync(command, cancellationToken);
-
-        var query = new GetPhoneByIdQuery(personId, id);
-        var phone = await _getByIdHandler.HandleAsync(query, cancellationToken);
-
+        var id = await _phones.CreateAsync(new CreatePhoneCommand(personId, request.Type, request.Number), cancellationToken);
+        var phone = await _phones.GetByIdAsync(new GetPhoneByIdQuery(personId, id), cancellationToken);
         return CreatedAtRoute(nameof(GetPhoneById), new { personId, phoneId = id }, phone.ToResponse());
     }
 
@@ -127,23 +86,7 @@ public class PhonesController : ControllerBase
         [FromBody] UpdatePhoneRequest request,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request);
-
-        var validation = await _updateValidator.ValidateAsync(request, cancellationToken);
-        if (!validation.IsValid)
-        {
-            foreach (var error in validation.Errors)
-            {
-                ModelState.AddModelError(
-                    string.IsNullOrEmpty(error.PropertyName) ? "request" : error.PropertyName,
-                    error.ErrorMessage);
-            }
-
-            return ValidationProblem(ModelState);
-        }
-
-        var command = new UpdatePhoneCommand(personId, phoneId, request.Type, request.Number);
-        await _updateHandler.HandleAsync(command, cancellationToken);
+        await _phones.UpdateAsync(new UpdatePhoneCommand(personId, phoneId, request.Type, request.Number), cancellationToken);
         return NoContent();
     }
 
@@ -158,8 +101,7 @@ public class PhonesController : ControllerBase
         Guid phoneId,
         CancellationToken cancellationToken)
     {
-        var command = new DeletePhoneCommand(personId, phoneId);
-        await _deleteHandler.HandleAsync(command, cancellationToken);
+        await _phones.DeleteAsync(new DeletePhoneCommand(personId, phoneId), cancellationToken);
         return NoContent();
     }
 }
